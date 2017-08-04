@@ -16,10 +16,11 @@ body, html {
   padding: 0;
   border: 0;
   outline: 0;
-  font-size: 110%;
+  font-size: 100%;
   vertical-align: baseline;
   background: transparent;
   font-family: 'PT Serif', serif;
+  line-height: 160%;
 }
 
 a {
@@ -38,15 +39,34 @@ a {
   padding: 0 20px;
 }
 
+.section p {
+  margin: 0;
+  padding: 0;
+}
+
 h1 a, h2 a, h3 a {
   color: #000;
 }
 
-#alexa-cheats:after {
-  content: 'heet';
-  padding-left: 2px;
-  color: #31C4F3;
-  font-weight: bold;
+.section {
+  max-width: 600px;
+  position: absolute;
+}
+
+.section.note h1,
+.section.note h2,
+.section.note h3,
+.section.note h4,
+.section.note h5,
+.section.note h6 {
+    padding: 0;
+    margin: 0;
+}
+
+.section a.handle {
+    color: #000;
+    padding-right: 6px;
+    font-weight: bold;
 }
 
 #header p a {
@@ -82,46 +102,87 @@ h1 a, h2 a, h3 a {
   width: 25%;
 }
 
-#commands .section {
-  padding: 0 20px;
-  /* width: 100%; */
-}
-
 #commands .handle {
   cursor: -webkit-grab;
 }
 
-em {
-  color: #aaa;
-  font-size: 0.85em;
+.note ul {
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+    font-family: serif;
 }
 
-li strong {
-  border-radius: 5px;
-  padding: 1px 3px;
-  font-weight: normal;
-  color: #31C4F3;
-  cursor: pointer;
-  text-shadow: 0px 0px #31C4F3;
+.section {
+  padding: 10px 15px;
+  margin: 10px;
+  border-radius: 10px;
 }
 
-li strong:hover {
-  color: #F8981D;
-  background-color: #f7f7f7;
+.section em {
+  color: black;
+  padding: 3px 6px;
+  border-radius: 3px;
 }
 
-li strong .variation {
-  display: none;
+.section.note p:first-child {
+  font-family: serif;
 }
 
-li strong .variation.current {
-  display: inline;
+.section.note {
+  font-family: "Indie Flower", serif;
 }
 
-ul {
-  list-style-type:none;
-  padding-left:0;
+.n-1 {
+  background-color: #f4e3d7;
 }
+
+.note-1 {
+  color: #784421;
+  background-color: #f4e3d7;
+}
+
+.n-2 {
+  background-color: #d5e5ff;
+}
+
+.note-2 {
+  color: #003380;
+  background-color: #d5e5ff;
+}
+
+.n-3 {
+  background-color: #e3f4d7;
+}
+
+.note-3 {
+  color: #225500;
+  background-color: #e3f4d7;
+}
+
+/* Connections */
+
+connection {
+   border: 5px solid #ccc;
+   opacity: 0.5;
+   z-index: -1;
+   border-radius:100%;
+   pointer-events:none;
+}
+
+.c-1 {
+  border: 5px solid #f4e3d7;
+}
+
+.c-2 {
+  border: 5px solid #d5e5ff;
+}
+
+.c-3 {
+  border: 5px solid #e3f4d7;
+}
+
+/* ------------------------------------------------------------------------ */
 
 #info {
   background: rgba(0,0,0,0.9);

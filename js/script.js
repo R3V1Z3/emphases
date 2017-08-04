@@ -1,6 +1,5 @@
 /* global $, jQuery, dragula, location */
 var TOC = [];
-var columns = 2;
 var gist;
 jQuery(document).ready(function() {
     
@@ -13,7 +12,7 @@ jQuery(document).ready(function() {
     var fontsize = getURLParameter('fontsize');
     if (!fontsize) fontsize = 110;
     $('body').css('font-size', fontsize + '%');
-    console.log(fontsize + '%');
+    
     var gist = getURLParameter('gist');
     var filename = getURLParameter('filename');
     if (!gist) gist = 'f1ff10976bd1e43445b19af9fd5bd311';
@@ -38,6 +37,8 @@ jQuery(document).ready(function() {
         }
         render(objects[0]);
         render_sections();
+        position_sections();
+        render_connections();
         render_info();
         if (gist === 'f1ff10976bd1e43445b19af9fd5bd311') $('#header h1').attr('id', 'alexa-cheats');
     }).error(function(e) {
@@ -46,86 +47,62 @@ jQuery(document).ready(function() {
     
     var showonly = getURLParameter('showonly');
     if (!showonly) showonly = '';
-    var columns = getURLParameter('columns');
-    if (!columns) columns = 2;
 
     function render(content) {
         var md = window.markdownit();
         $('#wrapper').html( md.render(content) );
-        
-        // handle variations, display first item
-        var $html = '';
-        $('li strong').each(function(){
-            var items = $(this).text().split('/');
-            $.each( items, function( key, value ) {
-                if (key == 0){
-                    $html = '<span class="variation current">' + value + '</span>';
-                } else {
-                    $html += '<span class="variation">' + value + '</span>';
-                }
-            });
-            $(this).html($html);
-        });
-        
-        // make variations clickable
-        $('li strong').click(function() {
-            var current = $(this).find('.variation.current');
-            $(current).removeClass('current');
-            if ($(current).next('.variation').length) {
-                $(current).next('.variation').addClass('current');
-            } else {
-                $(this).find('.variation').first().addClass('current');
-            }
-        });
-    }
-    
-    function columnize(columns) {
-        // begin by wrapping all sections in first column
-        $('#commands .section').wrapAll('<div class="column column1of' + columns + '" id="column1"/>');
-        if( columns < 2 || columns > 4 ) {
-            return;
-        }
-        for (var i=2; i <= columns; i++) {
-            $('#commands').append('<div class="column column1of' + columns + '" id="column' + i + '"/>');
-        }
-        
-        var column_counter = 1;
-        
-        // iterate sections
-        $('#commands .section').each(function() {
-            if( column_counter > 1 ) {
-                // move this section to next column
-                $(this).detach().appendTo('#column' + column_counter);
-            }
-            column_counter += 1;
-            if( column_counter > columns ) {
-                column_counter = 1;
-            }
-        });
     }
     
     function render_sections() {
         
         // header section
-        $('h1').each(function() {
-            $(this).nextUntil("h2").andSelf().wrapAll('<section id="header"/>');
-            $(this).wrapInner('<a name="header"/>');
-        });
+        var header = 'h1';
+        var heading = 'h2';
+        if ( $('#wrapper ' + header).length ) {
+            $('#wrapper ' + header).each(function() {
+                $(this).nextUntil(heading).andSelf().wrapAll('<section id="header"/>');
+                $(this).wrapInner('<a name="header"/>');
+            });
+        } else {
+            //no header, so we'll add an empty one
+            $('#wrapper').prepend('<section id="header"></section>');
+        }
         
         // command sections
-        $('h2').each(function() {
-            // get content of h2
+        $('#wrapper ' + heading).each(function() {
             var name = $(this).text().toLowerCase().replace(/\s/g, "-");
             name = name.replace(',', '');
-            // add anchor link
-            $(this).wrapInner('<a class="handle" name="' + name + '"/>');
-            $(this).nextUntil("h2").andSelf().wrapAll('<div class="section" id="' + name + '"/>');
+            
+            var splice = name.split('[');
+            name = name.split('[')[0];
+            
+            // $(this).append(toggle_html);
+            $(this).nextUntil(heading).andSelf().wrapAll( '<div class="section" id="' + name + '"/>' );
+            if ( splice.length > 1 ) {
+                var num = splice[1].split(']')[0];
+                var text = $(this).text();
+                $(this).text( text.split('[')[0] );
+                $(this).parent().addClass( 'note note-' + Number( num ) );
+                $(this).wrapInner( '<a class="handle" name="' + name + '"/>' );
+                $(this).nextUntil(heading).wrapAll('<div class="content"/>');
+            } else {
+                $(this).nextUntil(heading).prepend( '<a class="handle" name="' + name + '">' + $(this).text() + '</a>' );
+                $(this).nextUntil(heading).wrapAll('<div class="content"/>');
+                $(this).remove();
+            }
         });
         
         // wrap all command sections in new section
         $('#header').siblings().wrapAll('<section id="commands"/>');
         
-        columnize(columns);
+        // update [1] footnote links
+        $('.section em').each(function() {
+            var text = $(this).text();
+            var splice = text.split('[');
+            var num = splice[1].split(']')[0];
+            $(this).text( splice[0] );
+            $(this).addClass( 'n-' + Number( num ) );
+        });
         
         // hide all other sections if showonly has been specified
         if(showonly != '') {
@@ -133,15 +110,42 @@ jQuery(document).ready(function() {
         }
         
         // make sections draggable
-        dragula( $('.column').toArray(),  {
-            moves: function (el, container, handle) {
-                return handle.className === 'handle';
+        $( '.section' ).draggable({
+            drag: function() {
+                render_connections();
+            },
+            stop: function() {
+                render_connections();
             }
-        }).on('drop', function (el) {
-            // update toc
-            $('#toc').html( toc_html() );
         });
+
   
+    }
+    
+    function position_sections() {
+        var counter = 0;
+        var y = 0;
+        $( '.section' ).each(function() {
+            if ( counter != 0 ) {
+                var prev_height = $(this).prev('.section').height();
+                y += prev_height;
+                $(this).css( {top: y, left: 10} );
+            }
+            counter += 1;
+        });
+    }
+    
+    function render_connections() {
+        if ( $('connection').length === 0 ) {
+            $( '.section .content [class^="n"]' ).each(function() {
+                    var classes = $(this).attr('class');
+                    var to = classes.substr(classes.indexOf("n-") + 2).split(' ')[0];
+                    $(this).connections({ to: '.note-' + to , 'class': 'c-' + to});
+            });
+        } else {
+            // update connections
+            $('.section .content [class^="n"]').connections('update');
+        }
     }
     
     function render_info() {
@@ -174,6 +178,7 @@ jQuery(document).ready(function() {
         // iterate section classes and get id name to compose TOC
         $( '#commands .section' ).each(function() {
             var name = $( this ).attr( 'id' );
+            name = name.split('[')[0];
             html += '<a href="#' + name + '">';
             html += name;
             html += '</a>';
