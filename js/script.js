@@ -16,7 +16,7 @@ jQuery(document).ready(function() {
     console.log(fontsize + '%');
     var gist = getURLParameter('gist');
     var filename = getURLParameter('filename');
-    if (!gist) gist = '2a06603706fd7c2eb5c93f34ed316354';
+    if (!gist) gist = 'f1ff10976bd1e43445b19af9fd5bd311';
     $.ajax({
         url: 'https://api.github.com/gists/' + gist,
         type: 'GET',
@@ -39,7 +39,7 @@ jQuery(document).ready(function() {
         render(objects[0]);
         render_sections();
         render_info();
-        if (gist === '2a06603706fd7c2eb5c93f34ed316354') $('#header h1').attr('id', 'alexa-cheats');
+        if (gist === 'f1ff10976bd1e43445b19af9fd5bd311') $('#header h1').attr('id', 'alexa-cheats');
     }).error(function(e) {
         console.log('Error on ajax return.');
     });
