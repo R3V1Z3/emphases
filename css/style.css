@@ -7,6 +7,9 @@
   #wrapper {
     padding: 0px;
   }
+  .ui-resizable-handle {
+    display: none !important;
+  }
 }
 
 @page { size:8.5in 11in; margin: 0.25cm }
@@ -49,8 +52,24 @@ h1 a, h2 a, h3 a {
 }
 
 .section {
-  max-width: 600px;
+  width: 400px;
+  height: 200px;
+  min-width: 200px;
+  min-height: 100px;
+  max-height: 800px;
   position: absolute;
+}
+
+.section:not(.note) .ui-resizable-handle {
+  opacity: 0;
+}
+
+.section:not(.note):hover .ui-resizable-handle {
+  opacity: 1;
+}
+
+.section:not(.note):hover {
+  background-color: rgba(0,0,0,0.05);
 }
 
 .section.note h1,
@@ -244,16 +263,19 @@ connection {
   cursor: pointer;
 }
 
-#info #hide:hover .key {
-  background-color: #F8981D;
-}
-
-#info #hide .key {
-  background-color: #31C4F3;
-  border-radius: 50%;
-  padding: 0px 7px;
-  color: #000;
-  font-weight: bold;
+/* Keypress styling */
+kbd {
+  display: inline-block;
+  padding: 3px 5px;
+  font-size: 11px;
+  line-height: 10px;
+  color: #444d56;
+  vertical-align: middle;
+  background-color: #fafbfc;
+  border: solid 1px #c6cbd1;
+  border-bottom-color: #959da5;
+  border-radius: 3px;
+  box-shadow: inset 0 -1px 0 #959da5;
 }
 
 /* Scrollbar styling */

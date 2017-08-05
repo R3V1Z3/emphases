@@ -1,6 +1,7 @@
 /* global $, jQuery, dragula, location */
 var TOC = [];
 var gist;
+var document_content;
 jQuery(document).ready(function() {
     
     // get url parameters
@@ -12,6 +13,14 @@ jQuery(document).ready(function() {
     var fontsize = getURLParameter('fontsize');
     if (!fontsize) fontsize = 110;
     $('body').css('font-size', fontsize + '%');
+    
+    var showonly = getURLParameter('showonly');
+    if (!showonly) showonly = '';
+    
+    var header = getURLParameter('header');
+    if (!header) header = 'h1';
+    var heading = getURLParameter('heading');
+    if (!heading) heading = 'h2';
     
     var gist = getURLParameter('gist');
     var filename = getURLParameter('filename');
@@ -35,29 +44,40 @@ jQuery(document).ready(function() {
         else {
             objects.push(gistdata.data.files[filename].content);
         }
-        render(objects[0]);
+        document_content = objects[0];
+        render(document_content);
         render_sections();
         position_sections();
         render_connections();
         render_info();
-        if (gist === 'f1ff10976bd1e43445b19af9fd5bd311') $('#header h1').attr('id', 'alexa-cheats');
+        register_keys();
+        if (gist === 'f1ff10976bd1e43445b19af9fd5bd311') $('#header h1').attr('id', 'cheats');
     }).error(function(e) {
         console.log('Error on ajax return.');
     });
-    
-    var showonly = getURLParameter('showonly');
-    if (!showonly) showonly = '';
 
     function render(content) {
         var md = window.markdownit();
         $('#wrapper').html( md.render(content) );
     }
     
+    function register_keys() {
+        // Add listeners for keypress commands
+        $(document).keypress(function(e) {
+            if( e.which == 104 || e.which == 63 || e.which == 72 || e.which == 47 ) {
+                $('#info').toggle();
+            } else if( e.which == 88 || e.which == 120) {
+                open_export();
+            }
+        });
+    }
+    
     function render_sections() {
         
+        // remove any empty p elements
+        $( 'p:empty' ).remove();
+        
         // header section
-        var header = 'h1';
-        var heading = 'h2';
         if ( $('#wrapper ' + header).length ) {
             $('#wrapper ' + header).each(function() {
                 $(this).nextUntil(heading).andSelf().wrapAll('<section id="header"/>');
@@ -71,13 +91,16 @@ jQuery(document).ready(function() {
         // command sections
         $('#wrapper ' + heading).each(function() {
             var name = $(this).text().toLowerCase().replace(/\s/g, "-");
+            // remove any existing commas
             name = name.replace(',', '');
-            
+            // remove footnote reference from name
             var splice = name.split('[');
             name = name.split('[')[0];
             
-            // $(this).append(toggle_html);
+            // add name as id for respective section
             $(this).nextUntil(heading).andSelf().wrapAll( '<div class="section" id="' + name + '"/>' );
+            
+            // handler for footnote sections
             if ( splice.length > 1 ) {
                 var num = splice[1].split(']')[0];
                 var text = $(this).text();
@@ -86,8 +109,10 @@ jQuery(document).ready(function() {
                 $(this).wrapInner( '<a class="handle" name="' + name + '"/>' );
                 $(this).nextUntil(heading).wrapAll('<div class="content"/>');
             } else {
-                $(this).nextUntil(heading).prepend( '<a class="handle" name="' + name + '">' + $(this).text() + '</a>' );
-                $(this).nextUntil(heading).wrapAll('<div class="content"/>');
+                // handler for other sections
+                var handle = '<a class="handle" name="' + name + '">' + $(this).text() + '</a>';
+                var $p = $(this).nextUntil(heading).wrapAll('<div class="content"/>');
+                $p.first('p').prepend(handle);
                 $(this).remove();
             }
         });
@@ -109,38 +134,63 @@ jQuery(document).ready(function() {
             $('#' + showonly).siblings().hide();
         }
         
-        // make sections draggable
         $( '.section' ).draggable({
-            drag: function() {
-                render_connections();
-            },
-            stop: function() {
-                render_connections();
-            }
+            drag: function() { render_connections(); },
+            stop: function() { render_connections(); }
         });
 
-  
+        $( '.section' ).resizable({
+            resize: function() { render_connections(); },
+            stop: function() { render_connections(); }
+        });
     }
     
     function position_sections() {
-        var counter = 0;
-        var y = 0;
-        $( '.section' ).each(function() {
-            if ( counter != 0 ) {
-                var prev_height = $(this).prev('.section').height();
-                y += prev_height;
-                $(this).css( {top: y, left: 10} );
-            }
-            counter += 1;
-        });
+        var docwidth = $(document).width();
+        var $sections = $('.section *:contains("<!--")');
+        if ( $sections.length > 0 ) {
+            $sections.each(function() {
+                // extract attributes
+                var text = $sections.text();
+                var s = text.substr(text.indexOf("<!-- {") + 6).split('}')[0];
+                var pairs = s.split(',');
+                for ( var i = 0; i < pairs.length; i++ ) {
+                    var key = pairs[i].split(':')[0];
+                    var value = pairs[i].split(':')[1];
+                    $(this).parent().css( key, value );
+                }
+                var html = $(this).html();
+                $(this).html( html.replace( /&lt;!--(.*?)--&gt;/, '') );
+            });
+        } else {
+            var counter = 0;
+            var left = 0;
+            var top = 0;
+            $sections = $('.section');
+            $sections.each(function() {
+                // set default values for section positions
+                if ( counter > 0 ) {
+                    var prev_width = $(this).prev('.section').width();
+                    // increment height if width of document is surpassed
+                    if ( left > docwidth - prev_width * 2 ) {
+                        left = 0;
+                        top += $(this).prev('.section').height();
+                    } else {
+                        left += prev_width;
+                    }
+                    $(this).css( {top: top, left: left} );
+                }
+                counter += 1;
+            });
+        }
     }
     
     function render_connections() {
         if ( $('connection').length === 0 ) {
             $( '.section .content [class^="n"]' ).each(function() {
-                    var classes = $(this).attr('class');
-                    var to = classes.substr(classes.indexOf("n-") + 2).split(' ')[0];
-                    $(this).connections({ to: '.note-' + to , 'class': 'c-' + to});
+                var classes = $(this).attr('class');
+                var to = classes.substr(classes.indexOf("n-") + 2).split(' ')[0];
+                $(this).connections({ to: '.note-' + to , 'class': 'c-' + to});
             });
         } else {
             // update connections
@@ -155,7 +205,7 @@ jQuery(document).ready(function() {
         
         // command count
         var command_count = $('li').length;
-        $('#command-count').html('Total commands: ' + command_count);
+        $('#command-count').html('<kbd>X</kbd> - open export window.');
         
         // hide info
         $('#hide').click(function() {
@@ -164,13 +214,6 @@ jQuery(document).ready(function() {
         
         var url = 'https://gist.github.com/' + gist;
         $('#gist-url').html('<a href="' + url + '">' + gist + '</a>');
-        
-        // Add keypress to toggle info on '?' or 'h'
-        $(document).keypress(function(e) {
-            if(e.which == 104 || e.which == 63 || e.which == 72 || e.which == 47) {
-                $('#info').toggle();
-            }
-        });
     }
     
     function toc_html() {
@@ -184,6 +227,66 @@ jQuery(document).ready(function() {
             html += '</a>';
         });
         return html;
+    }
+    
+    function open_export() {
+        // open new window
+        var xWindow = window.open(gist);
+        var content = '';
+        var newline = '\n\n'//'<br/>';
+        
+        // replace em content, we'll revert it back after
+        $('.section .content em').each(function() {
+            var id = $(this).attr('class');
+            id = id.split('-')[1];
+            var text = $(this).text();
+            $(this).replaceWith( '_' + text + '[' + id + ']_' );
+        });
+        
+        // iterate over all sections to get content
+        $('.section').each(function() {
+            // get section attributes
+
+            if ( $(this).hasClass('note') ) {
+                var classes = $(this).attr('class');
+                var id = classes.substr( classes.indexOf("note-") + 5 ).split(' ')[0];
+                content += '## ' + $(this).find('a.handle').text() + '[' + id + ']';
+                content += newline;
+                var li = $(this).find('ul li').text();
+                content += '- ' + li + newline;
+                content += $(this).find('p').text();
+            } else {
+                var h = $(this).find('a.handle').text();
+                content += '## ' + h;
+                content += newline;
+                var $p = $(this).find('p');
+                var replace = $p.text().replace( h, '');
+                content += replace;
+            }
+            
+            var attr = '';
+            var px = 'px';
+            attr += 'left:' + $(this).position().left + px;
+            attr += ',top:' + $(this).position().top + px;
+            attr += ',width:' + $(this).width() + px;
+            attr += ',height:' + $(this).height() + px;
+            
+            // when a newline is added here, a new p tag is added in interface
+            // this throws off the detection for the comment tag since it's in a different paragraph
+            
+            content += newline;
+            content += '&lt;!-- {' + attr + '} -->';
+            content += newline + newline;
+        });
+        xWindow.document.write( content.replace(/\n\n/g, '<br/>') );
+        
+        // revert document
+        $('#wrapper').html('');
+        render(content);
+        render_sections();
+        position_sections();
+        render_connections();
+        render_info();
     }
 
 });
