@@ -1,4 +1,4 @@
-/* global $, jQuery, dragula, location */
+/* global $, jQuery, dragula, location, HtmlWhitelistedSanitizer */
 var TOC = [];
 var gist;
 var document_content;
@@ -55,6 +55,42 @@ jQuery(document).ready(function() {
     }).error(function(e) {
         console.log('Error on ajax return.');
     });
+    
+    // allow for custom CSS via Gist
+    var css = getURLParameter('css');
+    var cssfilename = getURLParameter('cssfilename');
+    if (css) {
+        $.ajax({
+            url: 'https://api.github.com/gists/' + css,
+            type: 'GET',
+            dataType: 'jsonp'
+        }).success(function(gistdata) {
+            var objects = [];
+            if (!cssfilename) {
+                for (var file in gistdata.data.files) {
+                    if (gistdata.data.files.hasOwnProperty(file)) {
+                        var o = gistdata.data.files[file].content;
+                        if (o) {
+                            objects.push(o);
+                        }
+                    }
+                }
+            }
+            else {
+                objects.push(gistdata.data.files[filename].content);
+            }
+            render_css(objects[0]);
+        }).error(function(e) {
+            console.log('Error on ajax return.');
+        });
+    }
+    
+    function render_css(css) {
+        // attempt to sanitize CSS so hacker don't splode our website
+        var parser = new HtmlWhitelistedSanitizer(true);
+        var sanitizedHtml = parser.sanitizeString(css);
+        $('head').append('<style>' + sanitizedHtml + '</style>');
+    }
 
     function render(content) {
         var md = window.markdownit();
@@ -270,9 +306,6 @@ jQuery(document).ready(function() {
             attr += ',top:' + $(this).position().top + px;
             attr += ',width:' + $(this).width() + px;
             attr += ',height:' + $(this).height() + px;
-            
-            // when a newline is added here, a new p tag is added in interface
-            // this throws off the detection for the comment tag since it's in a different paragraph
             
             content += newline;
             content += '&lt;!-- {' + attr + '} -->';
