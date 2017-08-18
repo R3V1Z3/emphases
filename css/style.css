@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=PT+Sans|PT+Serif|Indie+Flower');
+@import url('https://fonts.googleapis.com/css?family=PT+Sans|PT+Serif|PT+Mono|Indie+Flower');
 
 @media print {
   #info {
@@ -29,6 +29,13 @@ body, html {
 a {
   color: #31C4F3;
   text-decoration: none;
+}
+
+#emphases span.e {
+  font-family: 'PT Mono', monospace;
+  background-color: #31C4F3;
+  border-radius: 50%;
+  padding: 2px 8px;
 }
 
 #wrapper {
@@ -91,10 +98,6 @@ h1 a, h2 a, h3 a {
 #header p a {
   text-decoration: none;
   color: #aaa;
-}
-
-#commands {
-  display: block;
 }
 
 .column {
