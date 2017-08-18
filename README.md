@@ -6,7 +6,7 @@ Many free, online Bible tools now include highlight features that let you add no
 
 ## How it works
 Simply create a document for free at GitHub Gist, get the document's ID, and add it to the url like so:
-https://ugotsta.github.io/words/?gist=6e0ba6b41a06a146e9704ce8c39d0fd4
+https://ugotsta.github.io/emphases/?gist=6e0ba6b41a06a146e9704ce8c39d0fd4
 
 Emphases will render the file, turning headers and respective content into sections that are easy to read.
 
@@ -34,5 +34,13 @@ These local links must follow a few rules, mainly that the characters used are e
 For example, to link to this section:  
 ```## Jesus the Messiah```
 
-Simply use this:  
-```[God](#jesus-the-messiah)```
+Simply use something like this:  
+```[Jesus the Messiah](#jesus-the-messiah)```
+
+## Advanced
+Emphases provides options in a number of ways, namely through URL parameters. The gist parameter lets you specify an ID for a document hosted at GitHub Gist, Emphases will load and parse that document for interaction.
+
+- gist - the ID for a document hosted at GitHub Gist.  
+Example: https://ugotsta.github.io/emphases/?gist=6e0ba6b41a06a146e9704ce8c39d0fd4
+- css - the Gist ID for a CSS document to use for styling/themeing of the document.  
+Example: https://ugotsta.github.io/emphases/?css=bf19fd93bc3552b569975bdc21aa2a10
