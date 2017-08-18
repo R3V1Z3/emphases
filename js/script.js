@@ -309,8 +309,6 @@ jQuery(document).ready(function() {
         // iterate over all sections to get content
         $('#export .section').each(function() {
 
-            // content += '## ' + $(this).find('a.handle').text();
-            // content += newline;
             content += $(this).text();
             
             // get section attributes
