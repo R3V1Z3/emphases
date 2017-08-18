@@ -14,17 +14,14 @@ jQuery(document).ready(function() {
     if (!fontsize) fontsize = 110;
     $('body').css('font-size', fontsize + '%');
     
-    var showonly = getURLParameter('showonly');
-    if (!showonly) showonly = '';
-    
-    var header = getURLParameter('header');
+    var header = getURLParameter('header'); // 'none' to simply bypass header
     if (!header) header = 'h1';
     var heading = getURLParameter('heading');
     if (!heading) heading = 'h2';
     
     var gist = getURLParameter('gist');
     var filename = getURLParameter('filename');
-    if (!gist) gist = 'f1ff10976bd1e43445b19af9fd5bd311';
+    if (!gist) gist = '576a1c645d3dbdfb69e8ae6bde8a1e46';
     $.ajax({
         url: 'https://api.github.com/gists/' + gist,
         type: 'GET',
@@ -51,7 +48,6 @@ jQuery(document).ready(function() {
         render_connections();
         render_info();
         register_keys();
-        if (gist === 'f1ff10976bd1e43445b19af9fd5bd311') $('#header h1').attr('id', 'cheats');
     }).error(function(e) {
         console.log('Error on ajax return.');
     });
@@ -114,61 +110,71 @@ jQuery(document).ready(function() {
         $( 'p:empty' ).remove();
         
         // header section
-        if ( $('#wrapper ' + header).length ) {
-            $('#wrapper ' + header).each(function() {
-                $(this).nextUntil(heading).andSelf().wrapAll('<section id="header"/>');
-                $(this).wrapInner('<a name="header"/>');
-            });
-        } else {
-            //no header, so we'll add an empty one
-            $('#wrapper').prepend('<section id="header"></section>');
+        if ( header != 'none' ) {
+            if ( $('#wrapper ' + header).length ) {
+                $('#wrapper ' + header).each(function() {
+                    $(this).nextUntil(heading).andSelf().wrapAll('<section id="header"/>');
+                    $(this).wrapInner('<a id="header"/>');
+                });
+            } else {
+                //no header, so we'll add an empty one
+                $('#wrapper').prepend('<section id="header"></section>');
+            }
         }
         
-        // command sections
+        // keep track of note number
+        var counter = 1;
+        
+        // sections
         $('#wrapper ' + heading).each(function() {
+            var note = false;
             var name = $(this).text().toLowerCase().replace(/\s/g, "-");
             // remove any existing commas
             name = name.replace(',', '');
-            // remove footnote reference from name
-            var splice = name.split('[');
-            name = name.split('[')[0];
             
-            // add name as id for respective section
-            $(this).nextUntil(heading).andSelf().wrapAll( '<div class="section" id="' + name + '"/>' );
+            var classes = '';
+            // check if any anchor links reference this setion and add respective classes if so
+            $("a[href*=#]").each(function() {
+                var href = $(this).attr('href').replace( '#', '' );
+                if ( href === name ) {
+                    // this is a note, so set boolean for later
+                    note = true;
+                    classes = ' note notenum-' + counter + ' note-' + href;
+                    // add note class to anchor link too
+                    $(this).addClass( 'n-' + href );
+                }
+            });
+            
+            // add name as id and add classes
+            $(this).nextUntil(heading).andSelf().wrapAll( '<div class="section' + classes + '" id="' + name + '"/>' );
             
             // handler for footnote sections
-            if ( splice.length > 1 ) {
-                var num = splice[1].split(']')[0];
-                var text = $(this).text();
-                $(this).text( text.split('[')[0] );
-                $(this).parent().addClass( 'note note-' + Number( num ) );
+            if ( note ) {
                 $(this).wrapInner( '<a class="handle" name="' + name + '"/>' );
                 $(this).nextUntil(heading).wrapAll('<div class="content"/>');
+                
+                //increment note counter
+                counter++;
             } else {
                 // handler for other sections
-                var handle = '<a class="handle" name="' + name + '">' + $(this).text() + '</a>';
+                var handle = '<a class="handle" id="' + name + '">' + $(this).text() + '</a>';
                 var $p = $(this).nextUntil(heading).wrapAll('<div class="content"/>');
                 $p.first('p').prepend(handle);
                 $(this).remove();
             }
         });
         
-        // wrap all command sections in new section
-        $('#header').siblings().wrapAll('<section id="commands"/>');
-        
-        // update [1] footnote links
-        $('.section em').each(function() {
-            var text = $(this).text();
-            var splice = text.split('[');
-            var num = splice[1].split(']')[0];
-            $(this).text( splice[0] );
-            $(this).addClass( 'n-' + Number( num ) );
+        // set colors for note links based on note sections
+        $('.note').each(function() {
+            var bg = $(this).css('background-color');
+            // get the note's id
+            var id = $(this).attr('id');
+            $( '.c-' + id ).css('border-color', bg);
+            $( '.n-' + id ).css('background-color', bg);
         });
         
-        // hide all other sections if showonly has been specified
-        if(showonly != '') {
-            $('#' + showonly).siblings().hide();
-        }
+        // wrap all command sections in new section
+        $('#header').siblings().wrapAll('<section id="commands"/>');
         
         $( '.section' ).draggable({
             drag: function() { render_connections(); },
@@ -185,6 +191,7 @@ jQuery(document).ready(function() {
         var docwidth = $(document).width();
         var $sections = $('.section *:contains("<!--")');
         if ( $sections.length > 0 ) {
+            // find attributes and position section
             $sections.each(function() {
                 // extract attributes
                 var text = $sections.text();
@@ -193,12 +200,14 @@ jQuery(document).ready(function() {
                 for ( var i = 0; i < pairs.length; i++ ) {
                     var key = pairs[i].split(':')[0];
                     var value = pairs[i].split(':')[1];
+                    //console.log( 'key: ' + key + ' | value: ' + value );
                     $(this).parent().css( key, value );
                 }
                 var html = $(this).html();
                 $(this).html( html.replace( /&lt;!--(.*?)--&gt;/, '') );
             });
         } else {
+            // no attributes for this section so place it in next row/column
             var counter = 0;
             var left = 0;
             var top = 0;
@@ -226,7 +235,11 @@ jQuery(document).ready(function() {
             $( '.section .content [class^="n"]' ).each(function() {
                 var classes = $(this).attr('class');
                 var to = classes.substr(classes.indexOf("n-") + 2).split(' ')[0];
-                $(this).connections({ to: '.note-' + to , 'class': 'c-' + to});
+                // get note's number from parent
+                classes = $('.note-' + to).attr("class");
+                var notenum = classes.substr(classes.indexOf("notenum-") + 8).split(' ')[0];
+                // draw connection from $(this) to [to] and add class c- to connection border for color
+                $(this).connections({ to: '.note-' + to , 'class': 'c-' + notenum});
             });
         } else {
             // update connections
@@ -266,40 +279,41 @@ jQuery(document).ready(function() {
     }
     
     function open_export() {
+        
         // open new window
         var xWindow = window.open(gist);
         var content = '';
-        var newline = '\n\n'//'<br/>';
+        var newline = '\n\n'; //'<br/>';
         
-        // replace em content, we'll revert it back after
-        $('.section .content em').each(function() {
-            var id = $(this).attr('class');
-            id = id.split('-')[1];
+        // clone wrapper for interaction with export content
+        var $export = $('#wrapper').clone();
+        $export.attr('id', 'export');
+        $('body').prepend($export);
+        
+        $('#export a.handle').each(function(){
             var text = $(this).text();
-            $(this).replaceWith( '_' + text + '[' + id + ']_' );
+            $(this).text( '## ' + text + newline );
+        });
+        
+        $('#export .content a[href*=#]').each(function(){
+            var text = $(this).text();
+            var link = $(this).attr('href');
+            $(this).text( '[' + text + '](' + link + ')' );
+        });
+        
+        $('#export li').each(function(){
+            var text = $(this).text();
+            $(this).text( '- ' + text + newline );
         });
         
         // iterate over all sections to get content
-        $('.section').each(function() {
-            // get section attributes
+        $('#export .section').each(function() {
 
-            if ( $(this).hasClass('note') ) {
-                var classes = $(this).attr('class');
-                var id = classes.substr( classes.indexOf("note-") + 5 ).split(' ')[0];
-                content += '## ' + $(this).find('a.handle').text() + '[' + id + ']';
-                content += newline;
-                var li = $(this).find('ul li').text();
-                content += '- ' + li + newline;
-                content += $(this).find('p').text();
-            } else {
-                var h = $(this).find('a.handle').text();
-                content += '## ' + h;
-                content += newline;
-                var $p = $(this).find('p');
-                var replace = $p.text().replace( h, '');
-                content += replace;
-            }
+            // content += '## ' + $(this).find('a.handle').text();
+            // content += newline;
+            content += $(this).text();
             
+            // get section attributes
             var attr = '';
             var px = 'px';
             attr += 'left:' + $(this).position().left + px;
@@ -312,14 +326,7 @@ jQuery(document).ready(function() {
             content += newline + newline;
         });
         xWindow.document.write( content.replace(/\n\n/g, '<br/>') );
-        
-        // revert document
-        $('#wrapper').html('');
-        render(content);
-        render_sections();
-        position_sections();
-        render_connections();
-        render_info();
+        $export.remove();
     }
 
 });

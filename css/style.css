@@ -152,29 +152,24 @@ h1 a, h2 a, h3 a {
   font-family: "Indie Flower", serif;
 }
 
-.n-1 {
-  background-color: #f4e3d7;
+.content a {
+  color: #000;
+  font-style: italic;
+  padding: 4px 8px;
+  border-radius: 5px;
 }
 
-.note-1 {
+.notenum-1 {
   color: #784421;
   background-color: #f4e3d7;
 }
 
-.n-2 {
-  background-color: #d5e5ff;
-}
-
-.note-2 {
+.notenum-2 {
   color: #003380;
   background-color: #d5e5ff;
 }
 
-.n-3 {
-  background-color: #e3f4d7;
-}
-
-.note-3 {
+.notenum-3 {
   color: #225500;
   background-color: #e3f4d7;
 }
@@ -188,6 +183,8 @@ connection {
    border-radius:100%;
    pointer-events:none;
 }
+
+/* Border colors - can't be included with note colors due to background color */
 
 .c-1 {
   border-color: #f4e3d7;
