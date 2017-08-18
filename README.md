@@ -31,8 +31,8 @@ As long as a section labeled 'God' exists, the above portion of content will aut
 ##### Local link formatting
 These local links must follow a few rules, mainly that the characters used are either lowercase alphanumeric or dashes. Spaces, commas, periods and other characters can be replaced with dashes in the links.
 
-For example, to link to this section:
+For example, to link to this section:  
 ```## Jesus the Messiah```
 
-Simply use this:
+Simply use this:  
 ```[God](#jesus-the-messiah)```
