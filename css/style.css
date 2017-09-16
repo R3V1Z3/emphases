@@ -14,8 +14,7 @@
 
 @page { size:8.5in 11in; margin: 0.25cm }
 
-.draggable,
-connection {
+* {
   transition: none;
 }
 
@@ -63,18 +62,6 @@ h1 a, h2 a, h3 a {
   position: absolute;
 }
 
-.section:not(.note) .ui-resizable-handle {
-  opacity: 0;
-}
-
-.section:not(.note):hover .ui-resizable-handle {
-  opacity: 1;
-}
-
-.section:not(.note):hover {
-  background-color: rgba(0,0,0,0.05);
-}
-
 .section.note h1,
 .section.note h2,
 .section.note h3,
@@ -92,6 +79,7 @@ h1 a, h2 a, h3 a {
 }
 
 .handle-heading {
+  z-index: 1;
   cursor: move;
 }
 
@@ -155,9 +143,10 @@ h1 a, h2 a, h3 a {
 connection {
    border: 7px solid #ccc;
    opacity: 0.5;
-   z-index: -1;
+   z-index: 1;
    border-radius:100%;
    pointer-events:none;
+   mix-blend-mode: color;
 }
 
 /* Border colors - can't be included with note colors due to background color */
