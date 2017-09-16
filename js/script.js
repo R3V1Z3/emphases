@@ -1,218 +1,55 @@
-/* global $, jQuery, dragula, location, HtmlWhitelistedSanitizer */
-var TOC = [];
-var gist;
-var document_content;
+/* global jQuery, $, interact */
 jQuery(document).ready(function() {
     
-    // get url parameters
-    // from http://stackoverflow.com/questions/11582512/how-to-get-url-parameters-with-javascript/11582513#11582513
-    function getURLParameter(name) {
-        return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search) || [, ""])[1].replace(/\+/g, '%20')) || null;
-    }
-    
-    var fontsize = getURLParameter('fontsize');
-    if (!fontsize) fontsize = 110;
-    $('body').css('font-size', fontsize + '%');
-    
-    var header = getURLParameter('header'); // 'none' to simply bypass header
-    if (!header) header = 'h1';
-    var heading = getURLParameter('heading');
-    if (!heading) heading = 'h2';
-    
-    var gist = getURLParameter('gist');
-    var filename = getURLParameter('filename');
-    if (!gist) gist = '576a1c645d3dbdfb69e8ae6bde8a1e46';
-    $.ajax({
-        url: 'https://api.github.com/gists/' + gist,
-        type: 'GET',
-        dataType: 'jsonp'
-    }).success(function(gistdata) {
-        var objects = [];
-        if (!filename) {
-            for (var file in gistdata.data.files) {
-                if (gistdata.data.files.hasOwnProperty(file)) {
-                    var o = gistdata.data.files[file].content;
-                    if (o) {
-                        objects.push(o);
-                    }
-                }
-            }
-        }
-        else {
-            objects.push(gistdata.data.files[filename].content);
-        }
-        document_content = objects[0];
-        render(document_content);
-        render_sections();
+    var toggle_html='<span class="toggle"></span>';
+
+    // attach the plugin to an element
+    $('#wrapper').gitdown( {    'title': 'Emphases',
+                                'content': 'README.md',
+                                'callback': main
+    } );
+    var $gd = $('#wrapper').data('gitdown');
+
+    function main() {
+        
+        $('.info .app-title').html('<span class="em">Em</span>phases');
+        
         position_sections();
+        make_draggable();
+        notize();
+        register_events();
         render_connections();
-        render_info();
-        register_keys();
-    }).error(function(e) {
-        console.log('Error on ajax return.');
-    });
-    
-    // allow for custom CSS via Gist
-    var css = getURLParameter('css');
-    var cssfilename = getURLParameter('cssfilename');
-    if (css) {
-        $.ajax({
-            url: 'https://api.github.com/gists/' + css,
-            type: 'GET',
-            dataType: 'jsonp'
-        }).success(function(gistdata) {
-            var objects = [];
-            if (!cssfilename) {
-                for (var file in gistdata.data.files) {
-                    if (gistdata.data.files.hasOwnProperty(file)) {
-                        var o = gistdata.data.files[file].content;
-                        if (o) {
-                            objects.push(o);
-                        }
-                    }
-                }
-            }
-            else {
-                objects.push(gistdata.data.files[filename].content);
-            }
-            render_css(objects[0]);
-        }).error(function(e) {
-            console.log('Error on ajax return.');
-        });
-    }
-    
-    function render_css(css) {
-        // attempt to sanitize CSS so hacker don't splode our website
-        var parser = new HtmlWhitelistedSanitizer(true);
-        var sanitizedHtml = parser.sanitizeString(css);
-        $('head').append('<style>' + sanitizedHtml + '</style>');
-    }
-
-    function render(content) {
-        var md = window.markdownit();
-        $('#wrapper').html( md.render(content) );
-    }
-    
-    function register_keys() {
-        // Add listeners for keypress commands
-        $(document).keypress(function(e) {
-            if( e.which == 104 || e.which == 63 || e.which == 72 || e.which == 47 ) {
-                $('#info').toggle();
-            } else if( e.which == 88 || e.which == 120) {
-                open_export();
-            }
-        });
-    }
-    
-    function render_sections() {
-        
-        // remove any empty p elements
-        $( 'p:empty' ).remove();
-        
-        // header section
-        if ( header != 'none' ) {
-            if ( $('#wrapper ' + header).length ) {
-                $('#wrapper ' + header).each(function() {
-                    $(this).nextUntil(heading).andSelf().wrapAll('<section id="header"/>');
-                    $(this).wrapInner('<a id="header"/>');
-                });
-            } else {
-                //no header, so we'll add an empty one
-                $('#wrapper').prepend('<section id="header"></section>');
-            }
-        }
-        
-        // keep track of note number
-        var counter = 1;
-        
-        // sections
-        $('#wrapper ' + heading).each(function() {
-            var note = false;
-            var name = $(this).text().toLowerCase().replace(/\s/g, "-");
-            // remove any existing commas
-            name = name.replace(',', '');
-            
-            var classes = '';
-            // check if any anchor links reference this setion and add respective classes if so
-            $("a[href*=#]").each(function() {
-                var href = $(this).attr('href').replace( '#', '' );
-                if ( href === name ) {
-                    // this is a note, so set boolean for later
-                    note = true;
-                    classes = ' note notenum-' + counter + ' note-' + href;
-                    // add note class to anchor link too
-                    $(this).addClass( 'n-' + href );
-                }
-            });
-            
-            // add name as id and add classes
-            $(this).nextUntil(heading).andSelf().wrapAll( '<div class="section' + classes + '" id="' + name + '"/>' );
-            
-            // handler for footnote sections
-            if ( note ) {
-                $(this).wrapInner( '<a class="handle" name="' + name + '"/>' );
-                $(this).nextUntil(heading).wrapAll('<div class="content"/>');
-                
-                //increment note counter
-                counter++;
-            } else {
-                // handler for other sections
-                var handle = '<a class="handle" id="' + name + '">' + $(this).text() + '</a>';
-                var $p = $(this).nextUntil(heading).wrapAll('<div class="content"/>');
-                $p.first('p').prepend(handle);
-                $(this).remove();
-            }
-        });
-        
-        // set colors for note links based on note sections
-        $('.note').each(function() {
-            var bg = $(this).css('background-color');
-            // get the note's id
-            var id = $(this).attr('id');
-            $( '.c-' + id ).css('border-color', bg);
-            $( '.n-' + id ).css('background-color', bg);
-        });
-        
-        // wrap all command sections in new section
-        $('#header').siblings().wrapAll('<section id="commands"/>');
-        
-        $( '.section' ).draggable({
-            drag: function() { render_connections(); },
-            stop: function() { render_connections(); }
-        });
-
-        $( '.section' ).resizable({
-            resize: function() { render_connections(); },
-            stop: function() { render_connections(); }
-        });
+        render_connections();
     }
     
     function position_sections() {
         var docwidth = $(document).width();
-        var $sections = $('.section *:contains("<!--")');
+        var $sections = $('.section *');
         if ( $sections.length > 0 ) {
             // find attributes and position section
-            $sections.each(function() {
-                // extract attributes
-                var text = $sections.text();
-                var s = text.substr(text.indexOf("<!-- {") + 6).split('}')[0];
-                var pairs = s.split(',');
-                for ( var i = 0; i < pairs.length; i++ ) {
-                    var key = pairs[i].split(':')[0];
-                    var value = pairs[i].split(':')[1];
-                    //console.log( 'key: ' + key + ' | value: ' + value );
-                    $(this).parent().css( key, value );
+            $sections.children().each(function() {
+                var comments = $(this).getComments();
+                if ( comments.length > 0 ) {
+                    // comment found, extract attributes
+                    var text = comments[0];
+                    var s = text.substr(text.indexOf("{") + 1).split('}')[0];
+                    var pairs = s.split(',');
+                    for ( var i = 0; i < pairs.length; i++ ) {
+                        var key = pairs[i].split(':')[0];
+                        var value = pairs[i].split(':')[1];
+                        $(this).closest('.section').css( key, value );
+                    }
                 }
-                var html = $(this).html();
-                $(this).html( html.replace( /&lt;!--(.*?)--&gt;/, '') );
             });
-        } else {
-            // no attributes for this section so place it in next row/column
-            var counter = 0;
-            var left = 0;
-            var top = 0;
-            $sections = $('.section');
-            $sections.each(function() {
+        }
+        
+        // iterate over sections and position elements if they're at 0,0
+        var counter = 0;
+        var left = 0;
+        var top = 0;
+        $('.section').each(function() {
+            var position = $(this).position();
+            if ( position.top === 0 && position.left === 0 ) {
                 // set default values for section positions
                 if ( counter > 0 ) {
                     var prev_width = $(this).prev('.section').width();
@@ -226,8 +63,51 @@ jQuery(document).ready(function() {
                     $(this).css( {top: top, left: left} );
                 }
                 counter += 1;
+            }
+        });
+    }
+    
+    function notize() {
+        $('.section').each(function() {
+            
+            var $s = $(this);
+            
+            // quickly add a draggable class for drag method
+            $s.addClass('draggable');
+            
+            // set initial position values
+            var x = $s.css('left').slice( 0, -2 );
+            var y = $s.css('top').slice( 0, -2 );
+            $s.attr('data-x', x);
+            $s.attr('data-y', y);
+            
+            var name = $(this).find('a.handle').attr('name');
+            // check if any anchor links reference this setion and add respective classes if so
+            $(".content a[href*=#]").each(function() {
+                var $link = $(this);
+                var href = $link.attr('href').substr(1);
+                if ( href === name ) {
+                    // this is a note, so set boolean for later
+                    var classes = ' note note-' + href;
+                    $s.addClass(classes);
+                    // add note class to anchor link too
+                    $link.addClass( 'n-' + href );
+                    $link.closest('.section').addClass('reference');
+                }
             });
-        }
+        });
+        
+        var counter = 1;
+        // set colors for note links based on note sections
+        $('.note').each(function() {
+            $(this).addClass('notenum-' + counter);
+            var bg = $(this).css('background-color');
+            // get the note's id
+            var id = $(this).attr('id');
+            $( '.c-' + id ).css('border-color', bg);
+            $( '.n-' + id ).css('background-color', bg);
+            counter++;
+        });
     }
     
     function render_connections() {
@@ -247,41 +127,73 @@ jQuery(document).ready(function() {
         }
     }
     
-    function render_info() {
-        
-        // render TOC
-        $('#toc').html( toc_html() );
-        
-        // command count
-        var command_count = $('li').length;
-        $('#command-count').html('<kbd>X</kbd> - open export window.');
-        
-        // hide info
-        $('#hide').click(function() {
-            $('#info').toggle();
+    function make_draggable() {
+        // target elements with the "draggable" class
+        interact('.draggable')//.allowFrom('.handle-heading')
+            .draggable({
+                // enable inertial throwing
+                inertia: false,
+                // keep the element within the area of it's parent
+                restrict: {
+                  restriction: "parent",
+                  endOnly: true,
+                  elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
+            },
+            // enable autoScroll
+            autoScroll: true,
+            
+            // call this function on every dragmove event
+            onmove: dragMoveListener,
+            // call this function on every dragend event
+            onend: function (event) {
+            }
+        })
+        .resizable({
+            preserveAspectRatio: false,
+            edges: { left: true, right: true, bottom: true, top: true }
+            })
+            .on('resizemove', function (event) {
+            var target = event.target,
+                x = (parseFloat(target.getAttribute('data-x')) || 0),
+                y = (parseFloat(target.getAttribute('data-y')) || 0);
+            
+            // update the element's style
+            target.style.width  = event.rect.width + 'px';
+            target.style.height = event.rect.height + 'px';
+            
+            // translate when resizing from top or left edges
+            x += event.deltaRect.left;
+            y += event.deltaRect.top;
+            
+            target.setAttribute('data-x', x);
+            target.setAttribute('data-y', y);
+            render_connections();
         });
         
-        var url = 'https://gist.github.com/' + gist;
-        $('#gist-url').html('<a href="' + url + '">' + gist + '</a>');
-    }
-    
-    function toc_html() {
-        var html = '';
-        // iterate section classes and get id name to compose TOC
-        $( '#commands .section' ).each(function() {
-            var name = $( this ).attr( 'id' );
-            name = name.split('[')[0];
-            html += '<a href="#' + name + '">';
-            html += name;
-            html += '</a>';
-        });
-        return html;
+        function dragMoveListener (event) {
+            var target = event.target,
+            // keep the dragged position in the data-x/data-y attributes
+            x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx,
+            y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+
+            $(target).css('top', y + 'px');
+            $(target).css('left', x + 'px');
+            // // translate the element
+            // target.style.webkitTransform =
+            // target.style.transform =
+            //   'translate(' + x + 'px, ' + y + 'px)';
+            
+            // update the position attributes
+            target.setAttribute('data-x', x);
+            target.setAttribute('data-y', y);
+            render_connections();
+        }
     }
     
     function open_export() {
         
         // open new window
-        var xWindow = window.open(gist);
+        var xWindow = window.open('export');
         var content = '';
         var newline = '\n\n'; //'<br/>';
         
@@ -326,5 +238,16 @@ jQuery(document).ready(function() {
         xWindow.document.write( content.replace(/\n\n/g, '<br/>') );
         $export.remove();
     }
+    
+    function register_events() {
+        // Key events
+        $(document).keyup(function(e) {
+            if( e.which == 88 ) {
+                // x for export
+                open_export();
+            }
+        });
+    }
+    
 
 });

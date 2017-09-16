@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css?family=PT+Sans|PT+Serif|PT+Mono|Indie+Flower');
 
 @media print {
-  #info {
+  .info {
     display: none !important;
   }
   #wrapper {
@@ -14,39 +14,35 @@
 
 @page { size:8.5in 11in; margin: 0.25cm }
 
-body, html {
+.draggable,
+connection {
+  transition: none;
+}
+
+body, html, #wrapper, .container {
   margin: 0;
   padding: 0;
   border: 0;
   outline: 0;
-  font-size: 110%;
+  font-size: 100%;
   vertical-align: baseline;
   background: transparent;
   font-family: 'PT Serif', serif;
   line-height: 160%;
 }
 
+.container {
+  margin: auto;
+}
+
+.inner {
+  height: 1000px;
+  width: 100%;
+}
+
 a {
   color: #31C4F3;
   text-decoration: none;
-}
-
-#emphases span.e {
-  font-family: 'PT Mono', monospace;
-  background-color: #31C4F3;
-  border-radius: 50%;
-  padding: 2px 8px;
-}
-
-#wrapper {
-  justify-content: center;
-  align-items: center;
-  margin: auto;
-  padding: 0 20px;
-}
-
-#header {
-  padding: 0 20px;
 }
 
 .section p {
@@ -89,43 +85,20 @@ h1 a, h2 a, h3 a {
     margin: 0;
 }
 
+.reference .handle-heading {
+  float: left;
+  margin: 0;
+  padding: 0;
+}
+
+.handle-heading {
+  cursor: move;
+}
+
 .section a.handle {
     color: #000;
     padding-right: 6px;
     font-weight: bold;
-}
-
-#header p a {
-  text-decoration: none;
-  color: #aaa;
-}
-
-.column {
-  float: left;
-}
-
-.column1of1 {
-  display: block;
-  width: 100%;
-}
-
-.column1of2 {
-  display: block;
-  width: 50%;
-}
-
-.column1of3 {
-  display: block;
-  width: 33%;
-}
-
-.column1of4 {
-  display: block;
-  width: 25%;
-}
-
-#commands .handle {
-  cursor: -webkit-grab;
 }
 
 .note ul {
@@ -203,64 +176,35 @@ connection {
 
 /* ------------------------------------------------------------------------ */
 
-#info {
-  background: rgba(0,0,0,0.9);
-  position: fixed;
-  float:right;
-  top: 0px;
-  right: 0px;
-  width: 300px;
-  height: 470px;
-  box-shadow: -2px 2px 8px rgba(0,0,0,0.45);
-  border-radius: 0px 0px 0px 10px;
-  padding: 10px;
-  font-size: 0.85em;
-  color: #fff;
+.info {
+  color: #ddd;
 }
 
-#info h1, #info h1 a, #info h2, #info h3 {
-  color: #fff;
-  font-size: 1.1em;
+.info .app-title {
+  text-shadow: 1px 1px 2px black;
+  padding: 10px 2px;
 }
 
-#info #gist-url a {
-  font-size: 0.9em;
+.info .app-title .em {
+  background-color: #31C4F3;
+  border-radius: 50%;
 }
 
-#info #gist-url a:hover {
-  color: #ffffff;
-}
-
-#info #toc {
-  max-height: 200px;
-  overflow-y: scroll;
-  background-color: rgba(49, 196, 243, 0.1);
-  border-radius: 5px;
-}
-
-#info #toc a {
-  display: block;
-  font-size: 0.85em;
-  margin-left: 10px;
+.info .toc a {
   text-decoration: none;
   color: #31C4F3;
 }
 
-#info #toc a:hover {
+.info .toc a:hover {
   color: #fff;
 }
 
-#info #hide {
-  position: absolute;
-  text-align: right;
-  bottom: 20px;
-  right: 20px;
+.info .hide {
   color: #31C4F3;
 }
 
-#info #hide:hover {
+.info .hide:hover {
   color: #fff;
-  cursor: pointer;
 }
 
 /* Keypress styling */
