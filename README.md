@@ -46,10 +46,26 @@ These examples, when they exist in this README file, will be pulled and shown in
 - [Jews and Judah](?gist=a6c78ff888e9a3ff955de93b1aa2d48e) - the word 'Jew' in reference to the name 'Judah'.
 <!-- {left:0px,top:749px,width:1132px,height:217px} -->
 
-## `$gd_info`
-Word study and highlight tool    
-`$gd_help_ribbon`
-`$gd_gist`
-`$gd_css`
-`$gd_toc = "Table of Contents"`
-`$gd_hide`
+# Info <!-- {$gd_info} -->
+<!-- {$gd_help_ribbon} -->
+
+Word study and highlight tool  
+
+GIST <!-- {$gd_gist} -->
+- [Grace and Faith](https://gist.github.com/576a1c645d3dbdfb69e8ae6bde8a1e46)
+- [Desire and Authority](https://gist.github.com/6e0ba6b41a06a146e9704ce8c39d0fd4)
+- [The Sons of God](https://gist.github.com/f1ff10976bd1e43445b19af9fd5bd311)
+- [Jews and Judah](https://gist.github.com/a6c78ff888e9a3ff955de93b1aa2d48e)
+
+CSS <!-- {$gd_css} -->
+- [Vintage](https://gist.github.com/686ce03846004fd858579392ca0db2c1)
+- [Technology](https://gist.github.com/adc373c2d5a5d2b07821686e93a9630b)
+- [Saint Billy](https://gist.github.com/76c39d26b1b44e07bd7a783311caded8)
+- [Old Glory](https://gist.github.com/43bff1c9c6ae8a829f67bd707ee8f142)
+- [Woodwork](https://gist.github.com/c604615983fc6cdd5ebdbdd053800298)
+- [Corkboard](https://gist.github.com/ada930f9dae1d0a8d95f41cb7a56d658)
+- [Eerie](https://gist.github.com/7ac556b27c2cd34b00aa59e0d3621dea)
+- [Ghastly](https://gist.github.com/d1a6d5621b883bf6af886855d853d502)
+- [Writing on the Wall](https://gist.github.com/241b47680c730c7162cb5f82d6d788fa)
+## Table of Contents <!-- {$gd_toc} -->
+<!-- {$gd_hide} -->
