@@ -91,6 +91,7 @@ jQuery(document).ready(function() {
                     $s.addClass(classes);
                     // add note class to anchor link too
                     $link.addClass( 'n-' + href );
+                    $link.addClass( 'n-reference' );
                     $link.closest('.section').addClass('reference');
                 }
             });
@@ -177,10 +178,6 @@ jQuery(document).ready(function() {
 
             $(target).css('top', y + 'px');
             $(target).css('left', x + 'px');
-            // // translate the element
-            // target.style.webkitTransform =
-            // target.style.transform =
-            //   'translate(' + x + 'px, ' + y + 'px)';
             
             // update the position attributes
             target.setAttribute('data-x', x);
@@ -246,6 +243,7 @@ jQuery(document).ready(function() {
                 open_export();
             }
         });
+        
     }
     
 
