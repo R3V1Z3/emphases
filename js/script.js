@@ -19,7 +19,6 @@ jQuery(document).ready(function() {
         notize();
         register_events();
         render_connections();
-        render_connections();
     }
     
     function position_sections() {
@@ -135,7 +134,7 @@ jQuery(document).ready(function() {
                 inertia: false,
                 // keep the element within the area of it's parent
                 restrict: {
-                  restriction: "parent",
+                  restriction: 'self',
                   endOnly: true,
                   elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
             },

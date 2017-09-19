@@ -38,26 +38,18 @@ Simply use something like this:
 Once rendered, sections can be dragged to position them for better viewing/printing. Pressing <kbd>x</kbd> will provide an updated version of the document that includes position information that can be copied and pasted over the original file to save those details. With the position details included in the file, the url can easily be shared with positions intact.
 <!-- {left:614px,top:434px,width:508px,height:256px} -->
 
-## Example Gists
-These examples, when they exist in this README file, will be pulled and shown in a Gist drop-down in the Info panel. <!-- This should <script src"http://google'.com"></script>be converted to html comment -->
-- [Grace and Faith](?gist=576a1c645d3dbdfb69e8ae6bde8a1e46) - Exposition of Ephesians 2:8.
-- [Desire and Authority](?gist=6e0ba6b41a06a146e9704ce8c39d0fd4) - The concept of desire for authority considered.
-- [The Sons of God](?gist=f1ff10976bd1e43445b19af9fd5bd311) - Exposition of Sons of God in Genesis 6.
-- [Jews and Judah](?gist=a6c78ff888e9a3ff955de93b1aa2d48e) - the word 'Jew' in reference to the name 'Judah'.
-<!-- {left:0px,top:749px,width:1132px,height:217px} -->
-
-# Info <!-- {$gd_info} -->
+# Examples <!-- {$gd_info} -->
 <!-- {$gd_help_ribbon} -->
 
 Word study and highlight tool  
 
-GIST <!-- {$gd_gist} -->
-- [Grace and Faith](https://gist.github.com/576a1c645d3dbdfb69e8ae6bde8a1e46)
-- [Desire and Authority](https://gist.github.com/6e0ba6b41a06a146e9704ce8c39d0fd4)
-- [The Sons of God](https://gist.github.com/f1ff10976bd1e43445b19af9fd5bd311)
-- [Jews and Judah](https://gist.github.com/a6c78ff888e9a3ff955de93b1aa2d48e)
+Example Gists <!-- {$gd_gist} -->
+- [Grace and Faith](https://gist.github.com/576a1c645d3dbdfb69e8ae6bde8a1e46) - Exposition of Ephesians 2:8.
+- [Desire and Authority](https://gist.github.com/6e0ba6b41a06a146e9704ce8c39d0fd4)  - The concept of desire for authority considered.
+- [The Sons of God](https://gist.github.com/f1ff10976bd1e43445b19af9fd5bd311) - Exposition of Sons of God in Genesis 6.
+- [Jews and Judah](https://gist.github.com/a6c78ff888e9a3ff955de93b1aa2d48e) - the word 'Jew' in reference to the name 'Judah'.
 
-CSS <!-- {$gd_css} -->
+Themes <!-- {$gd_css} -->
 - [Vintage](https://gist.github.com/686ce03846004fd858579392ca0db2c1)
 - [Technology](https://gist.github.com/adc373c2d5a5d2b07821686e93a9630b)
 - [Saint Billy](https://gist.github.com/76c39d26b1b44e07bd7a783311caded8)
@@ -67,5 +59,6 @@ CSS <!-- {$gd_css} -->
 - [Eerie](https://gist.github.com/7ac556b27c2cd34b00aa59e0d3621dea)
 - [Ghastly](https://gist.github.com/d1a6d5621b883bf6af886855d853d502)
 - [Writing on the Wall](https://gist.github.com/241b47680c730c7162cb5f82d6d788fa)
-## Table of Contents <!-- {$gd_toc} -->
+
+<!-- {$gd_toc="Contents"} -->
 <!-- {$gd_hide} -->

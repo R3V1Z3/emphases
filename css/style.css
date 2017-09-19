@@ -60,6 +60,7 @@ h1 a, h2 a, h3 a {
   min-height: 100px;
   max-height: 800px;
   position: absolute;
+  touch-action: none;
 }
 
 .section:hover {
