@@ -28,6 +28,7 @@ body, html, #wrapper, .container {
   background: transparent;
   font-family: 'PT Serif', serif;
   line-height: 160%;
+  overflow: hidden;
 }
 
 .container {
@@ -37,6 +38,19 @@ body, html, #wrapper, .container {
 .inner {
   height: 1000px;
   width: 100%;
+}
+
+.gd-default .inner::before {
+  pointer-events: none;
+  content: "";
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background: url(https://ugotsta.github.io/gitdown/assets/cold-pressed-watercolor.jpg);
+  background-color: slategray;
+  background-blend-mode: hard-light;
 }
 
 a {
@@ -118,6 +132,13 @@ h1 a, h2 a, h3 a {
 
 .section.note {
   font-family: "Indie Flower", serif;
+  background: burlywood;
+  mix-blend-mode: color-burn;
+}
+
+a.n-reference {
+  background: burlywood;
+  mix-blend-mode: color-burn;
 }
 
 .content a {
@@ -145,26 +166,41 @@ h1 a, h2 a, h3 a {
 /* Connections */
 
 connection {
-   border: 7px solid #ccc;
+   border: 4px solid burlywood;
    opacity: 0.5;
    z-index: 1;
    border-radius:100%;
    pointer-events:none;
-   mix-blend-mode: overlay;
+   mix-blend-mode: color-burn;
 }
 
-/* Border colors - can't be included with note colors due to background color */
-
-.c-1 {
-  border-color: #f4e3d7;
+/* Editor */
+#custom .editor {
+  position: absolute;
+  width: 400px;
+  background: black;
+  border: 3px double rgba(255,255,255,0.5);
+  box-shadow: inset 0 0 50px rgba(255,255,255,0.5);
+  margin: 12px;
+  color: white;
+  mix-blend-mode: normal;
+  z-index: 50;
 }
 
-.c-2 {
-  border-color: #d5e5ff;
+#custom .editor .editor-content {
+  height: calc(100% - 20px);
 }
 
-.c-3 {
-  border-color: #e3f4d7;
+#custom .editor .editor-content,
+#custom .editor .editor-heading {
+  font-size: 100%;
+  padding: 10px;
+  width: calc(100% - 20px);
+  resize: both;
+  background: none;
+  color: white;
+  border: 0;
+  outline: 1px solid rgba(255,255,255,0.5);
 }
 
 /* ------------------------------------------------------------------------ */
