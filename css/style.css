@@ -163,6 +163,42 @@ a.n-reference {
   background-color: #e3f4d7;
 }
 
+/* Section interaction icons */
+
+.section .icon {
+  position: absolute;
+  width: 2em;
+  height: 2em;
+  border-radius: 50%;
+  background: black;
+  color: white;
+  font-family: monospace;
+  text-align: center;
+  font-weight: bold;
+  line-height: 1.75em;
+  mix-blend-mode: overlay;
+  cursor: pointer;
+  opacity: 0.25;
+}
+
+.section .icon:hover {
+  opacity: 1;
+}
+
+.section .icon.delete {
+  top: -1em;
+  left: -1em;
+}
+
+.section .icon.resize {
+  bottom: -1em;
+  right: -1em;
+}
+
+.section .icon.rotate {
+  display: none;
+}
+
 /* Connections */
 
 connection {

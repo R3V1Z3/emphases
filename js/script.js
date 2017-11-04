@@ -1,9 +1,4 @@
-var transforms = {
-    'scale': 1, 'translateX': '0px', 'translateY': '0px',
-    'perspective': '400px', 'rotateX': '0deg', 'rotateY': '0deg', 'scaleZ': '1',
-    'rotateZ': '0deg', 'translateZ': '0px'
-};
-
+var transforms = {}; // holds initial transform
 var $t; // will hold container where transforms are made
 var win;
 var vars;
@@ -25,6 +20,8 @@ jQuery(document).ready(function () {
     var inner_height = $(eid_inner).height();
 
     function main() {
+
+        treversed();
         $t = $('.inner').addClass('inner no-transition');
 
         position_sections();
@@ -33,22 +30,49 @@ jQuery(document).ready(function () {
         register_events();
         render_connections();
         update_transform(transforms);
+        must_stay_focused();
+    }
 
+    // for the moment, this same code base will be used for multiple apps
+    // treversed() will serve the differences for now until larger changes are needed
+    function treversed() {
+        transforms = {
+            'scale': 1, 'translateX': '0px', 'translateY': '0px',
+            'perspective': '400px', 'rotateX': '0deg', 'rotateY': '0deg', 'scaleZ': '1',
+            'rotateZ': '0deg', 'translateZ': '0px'
+        };
+        if ( $gd.settings.title === 'TreversED' ) {
+            transforms = {
+                'scale': 1, 'translateX': '0px', 'translateY': '0px',
+                'perspective': '400px', 'rotateX': '5deg', 'rotateY': '0deg', 'scaleZ': '1',
+                'rotateZ': '5deg', 'translateZ': '0px'
+            };
+        }
+    }
+
+    // initial routine to update current link and set starting focus
+    function must_stay_focused() {
         // get current section based on current toc link
         var $c = $(eid + ' .info .toc a.current');
         $c.removeClass('current');
 
         var hash = window.location.hash;
         if ( hash !== '' ) {
-            $c = $(eid + ` .info .toc a[href=${hash}]`);
+            // resort to default if hash section doesn't exist
+            var $hash = $(eid + ` .info .toc a[href=${hash}]`);
+            if ( $hash.length > 0 ) $c = $hash;
         }
 
-        $c.click().addClass('current');
+        $c.click();
 
         // for cases where only one section exists
         var id = $(eid + ' .section.current').attr('id');
         if ( $gd.settings.loaded ) {
             transform_focus(id);
+        }
+
+        if ( !$gd.settings.loaded ) {
+            register_events_onstartup();
         }
     }
 
@@ -57,8 +81,7 @@ jQuery(document).ready(function () {
         // ensure viewport doesn't go outside bounds
         var x = parseFloat(t['translateX']);
         var y = parseFloat(t['translateY']);
-        // todo: these values are affected by scale
-        // account for scaling
+        
         var scale = parseFloat(t['translateZ']) / 100;
 
         // ensure we stay in bounds
@@ -152,7 +175,7 @@ jQuery(document).ready(function () {
             }
 
             // row_height will be the height of the tallest section in the current row
-            if (height > row_height) {
+            if ( height > row_height ) {
                 row_height = height;
             }
 
@@ -165,11 +188,17 @@ jQuery(document).ready(function () {
                     var prev_width = $(this).prev('.section').width() + padding;
                     // setup allowed_width to enforce single column when p tag used for heading
                     var allowed_width = w;
-                    if ( $gd.settings.heading === 'p' || $gd.settings.heading === 'lyrics' ) allowed_width = prev_width;
+                    if ( $gd.settings.heading === 'p' || $gd.settings.heading === 'lyrics' ) {
+                        allowed_width = prev_width;
+                    }
                     // increment height if width of document is surpassed
-                    if (left > allowed_width - (prev_width * 2)) {
+                    if ( left > allowed_width - (prev_width * 1) ) {
                         left = w / divisor;
                         top += row_height + padding;
+                        if ( top + row_height > h ) {
+                            var h2 = $('.inner').height();
+                            $('.inner').height( h2 + h/4 );
+                        }
                         row_height = 0;
                     } else {
                         left += prev_width;
@@ -235,7 +264,6 @@ jQuery(document).ready(function () {
     }
 
     function open_export() {
-
         // open new window
         var xWindow = window.open('export');
         var content = export_content();
@@ -248,10 +276,8 @@ jQuery(document).ready(function () {
 
         // iterate over all sections to get content
         $(eid + ' .section').each(function () {
-
             // get content
             content += toMarkdown($(this).html());
-
             //get section attributes
             var attr = '';
             var px = 'px';
@@ -259,7 +285,6 @@ jQuery(document).ready(function () {
             attr += ',top:' + $(this).position().top + px;
             attr += ',width:' + $(this).width() + px;
             attr += ',height:' + $(this).height() + px;
-
             content += newline + newline;
             content += '&lt;!-- {' + attr + '} -->';
             content += newline + newline;
@@ -277,7 +302,9 @@ jQuery(document).ready(function () {
         update_transform(t);
     }
 
-    function render_editor(id) {
+    // id: section id this will be linked with
+    // focus: location in text to place cursor
+    function render_editor(id, focus) {
         // remove any existing editors first
         $(eid + ' .editor').remove();
 
@@ -299,6 +326,7 @@ jQuery(document).ready(function () {
         html += `<pre class="md content">${content}</pre>`;
         html += '<textarea class="editor-content" />';
         html += '</div>';
+        
         $s.after(html);
         var $editor = $('.editor');
         var padding = 100;
@@ -312,8 +340,14 @@ jQuery(document).ready(function () {
         // event handler for editor content changes
         $(eid + ' .editor-content').on('keyup change', function () {
             content = $('.editor-content').val();
-            var container = '.section#' + id + ' .content';
+            // get the attached section's current id
+            var id = $(this).closest('.editor').attr('data-section');
+            var container = `.section#${id} .content`;
             $gd.render(content, container);
+            // register any newly created/edited links
+            $s.find('a[href^=#]').click(function (e) {
+                register_hash_click(e);
+            });
             notize();
             render_connections();
         });
@@ -331,10 +365,12 @@ jQuery(document).ready(function () {
                 $editor_section.addClass(`note-${new_id}`);
             }
             $editor_section.attr('id', new_id);
-            var html = `<a class="handle" name="${new_id}">${content}</a>`;
             var $s = $(eid + ` .section#${new_id}`);
-            $s.find('.handle-heading').html(html);
-            $(this).parent().attr('data-section', new_id);
+            $s.find('.handle-heading')
+                .html(`<a class="handle" name="${new_id}">${content}</a>`);
+            
+            // update parent editor with the newly linked id
+            $(this).closest('.editor').attr('data-section', new_id);
 
             // update all links to this section
             var $l = $(eid + ` a[href=#${prev_id}]`);
@@ -343,6 +379,8 @@ jQuery(document).ready(function () {
             if ( $l.hasClass('n-reference') ) {
                 $l.addClass(`n-${new_id}`);
             }
+
+            //update_toc();
             // update toc link
             var $toc_link = $(eid + ` .info .toc a[href=#${new_id}]`);
             $toc_link.text(content);
@@ -353,16 +391,6 @@ jQuery(document).ready(function () {
 
         // restore transform
         update_transform(transforms);
-
-        // hide the editor if anything else is clicked
-        $(eid_inner).on('click', function (e) {
-            // if (e.target !== this) return;
-            if ($(e.target).closest(".section").length === 0) {
-                if ($(e.target).closest(".editor").length === 0) {
-                    $('.editor').remove();
-                }
-            }
-        });
 
         $(eid + ' .editor .md').remove();
 
@@ -418,27 +446,47 @@ jQuery(document).ready(function () {
         $editor.css('height', $s.height() + padding);
     }
 
-    function create_section(x, y) {
-        var name = 'New Section';
-        name = unique_name(name);
+    function update_toc() {
+        var s = [];
+        $( eid_inner + ' .section a.handle' ).each(function(){
+            s.push( $gd.clean($(this).text()) );
+        });
+        $gd.set_sections(s);
+        $gd.update_toc(s);
+        $(eid + ' .info .toc a').click(function (e) {
+            register_hash_click(e);
+        });
+    }
+
+    function create_section(x, y, prefix) {
+        if ( prefix === '' || prefix === undefined ) prefix = 'Section';
+        name = unique_name(prefix);
         var html = default_section_html(name);
         $('.inner').append(html);
-        $s = $('#' + $gd.clean(name));
+        var id = $gd.clean(name);
+        $s = $('#' + id);
         $s.css({ "top": y + 'px', "left": x + 'px' });
         $s.css({ "width": '200px', "height": '100px' });
         $s.attr('data-x', x).attr('data-y', y);
-        var s = $gd.get_sections();
-        s.push(name);
-        $gd.set_sections(s);
-        $gd.update_toc();
-        toc_click( $gd.clean(name) );
+        update_toc();
 
+        // make this section active by clicking toc link
+        $(eid + ` .toc a[href=#${id}]`).click();
         // make section current if it's clicked
         $s.click(function (e) {
-            if ( e.target !== this ) return;
-            var id = $(this).attr('id');
-            activate_section(id);
+            register_section_events(e);
         });
+
+        render_editor(id);
+        create_buttons(id);
+        render_connections();
+    }
+
+    function register_section_events(e) {
+        var $t = $(e.target);
+        if ( $t.is('a') ) return;
+        var id = $t.closest('.section').attr('id');
+        activate_section(id);
     }
 
     function unique_name(prefix) {
@@ -467,21 +515,114 @@ jQuery(document).ready(function () {
         return html;
     }
 
-    function toc_click(id) {
-        $(eid + ` .info .toc a[href=#${id}]`).click();
-    }
-
     function activate_section(id) {
         var $s = $(eid_inner + ` .section#${id}`);
         // only act if section exists
-        if ($s.length > 0) {
-            // remove .current class from active section
-            $('.section.current').removeClass('current');
-            // remove current toc link
-            $(eid + ' .info .toc a.current').removeClass('current');
-            $s.addClass('current');
-            $(eid + ` .info .toc a[href=#${id}]`).addClass('current');
-        }
+        if ($s.length < 1) return;
+        // remove .current class from active section
+        var $current = $(eid + ' .section.current').removeClass('current');
+        // remove current toc link
+        $(eid + ' .info .toc a.current').removeClass('current');
+        $s.addClass('current');
+        $(eid + ` .info .toc a[href=#${id}]`).addClass('current');
+
+        create_buttons(id);
+    }
+
+    function create_buttons(id) {
+        var $s = $(eid_inner + ` .section#${id}`);
+        // delete all extant .icon first
+        $(eid_inner + ' .section .icon').remove();
+
+        // RESIZE
+        // functionality is handled via interactjs .inner event
+        $s.append('<div class="icon resize">⤨</div>');
+
+        // ROTATE
+        // functionality is handled via interactjs .inner event
+        $s.append('<div class="icon rotate">↻</div>');
+
+        // DELETE
+
+        // only create .delete icon if more than one section exists
+        if ( $(eid_inner + ' .section').length < 2 ) return;
+
+        $s.append('<div class="icon delete">X</div>');
+        var $delete = $s.find('.delete');
+        $delete.click(function(e){
+            var $s = $(e.target).closest('.section');
+            $(eid + ` .info .toc a[href=#${$s.attr('id')}]`).remove();
+            $s.remove();
+            $(eid_inner + ' .editor').remove();
+            // add header class to first section if no header exists
+            if ( $(eid_inner + ' .section.header').length < 1 ) {
+                var $h = $(eid_inner + ' .section:first-child');
+                $h.removeClass('heading').addClass('header');
+            }
+        });
+    }
+
+    function register_events_onstartup() {
+
+        // Key events
+        $(document).keyup(function (e) {
+            if ( e.which == 83 && e.altKey ) {
+                // alt-x for export
+                open_export();
+            }
+        });
+
+        $(eid + ' .info .field.selector.app a.id').click(function (e) {
+            // configure url with hash and other needed params
+            var url = $(this).attr('data-id');
+            var css = $gd.settings.css;
+            url += `?css=${css}${location.hash}`;
+
+            // open window, receiveMessage will then wait for Ready message
+            win = window.open(url);
+            win.postMessage('Hello?', '*');
+        });
+
+        // .section interactions
+        interact(eid_inner).ignoreFrom('input, textarea, .section')
+        .draggable({
+            // enable inertial throwing
+            inertia: false,
+            // call this function on every dragmove event
+            onmove: function (event) {
+                $(eid_inner + ' .section .icon').remove();
+                var tx = parseFloat(transforms['translateX']) + event.dx;
+                var ty = parseFloat(transforms['translateY']) + event.dy;
+                transforms['translateX'] = tx + 'px';
+                transforms['translateY'] = ty + 'px';
+                update_transform(transforms);
+                render_connections();
+            }
+        })
+        .on('tap', function (event) {
+            //event.preventDefault();
+            $('.editor').remove();
+        })
+        .on('doubletap', function (e) {
+            if ($(e.target).hasClass('inner')) {
+                // create new section
+                e.preventDefault();
+                create_section(e.offsetX, e.offsetY);
+            }
+        })
+        .on('hold', function (event) {
+            // event.clientX
+        });
+    }
+
+    function register_hash_click(e) {
+        e.preventDefault();
+        var id = e.target.getAttribute('href').substr(1);
+        activate_section(id);
+        transform_focus(id);
+        render_connections();
+        // update url hash
+        window.location.hash = '#' + id;
     }
 
     function register_events() {
@@ -503,48 +644,21 @@ jQuery(document).ready(function () {
             }
         }, false);
 
-        $(eid + ' .info .field.selector.app a.id').click(function (e) {
-            
-            // configure url with hash and other needed params
-            var url = $(this).attr('data-id');
-            var css = $gd.settings.css;
-            url += `?css=${css}${location.hash}`;
-
-            // open window, receiveMessage will then wait for Ready message
-            win = window.open(url);
-            win.postMessage('Hello?', '*');
-        });
-
         // click handler for local links, incuding toc links
         $(eid + ' a[href^=#]').click(function (e) {
-            e.preventDefault();
-            var id = this.getAttribute('href').substr(1);
-            activate_section(id);
-            transform_focus(id);
-            render_connections();
-            // update url hash
-            window.location.hash = '#' + id;
+            register_hash_click(e);
         });
 
         // make section current if it's clicked
         $(eid + ' .section').click(function (e) {
-            if ( e.target !== this ) return;
-            var id = $(this).attr('id');
-            activate_section(id);
-        });
-
-        // Key events
-        $(document).keyup(function (e) {
-            if ( e.which == 83 && e.altKey ) {
-                // alt-x for export
-                open_export();
-            }
+            register_section_events(e);
         });
 
         // mousewheel zoom handler
         $(eid_inner).on('wheel', function (event) {
             event.preventDefault();
             if (this !== event.target) return;
+
             var scale = parseFloat(transforms['translateZ']);
             if (event.originalEvent.deltaY < 0) {
                 scale += 20;
@@ -564,39 +678,8 @@ jQuery(document).ready(function () {
             render_connections();
         });
 
-        // .section interactions
-        interact(eid_inner).draggable({
-            // enable inertial throwing
-            inertia: false,
-            ignoreFrom: '.section',
-            // call this function on every dragmove event
-            onmove: function (event) {
-                var target = event.target;
-                var $target = $(target);
-                var tx = parseFloat(transforms['translateX']) + event.dx;
-                var ty = parseFloat(transforms['translateY']) + event.dy;
-                transforms['translateX'] = tx + 'px';
-                transforms['translateY'] = ty + 'px';
-                update_transform(transforms);
-                render_connections();
-            }
-        })
-            .on('tap', function (event) {
-                //event.preventDefault();
-            })
-            .on('doubletap', function (e) {
-                if ($(e.target).hasClass('inner')) {
-                    // create new section
-                    e.preventDefault();
-                    create_section(e.offsetX, e.offsetY);
-                }
-            })
-            .on('hold', function (event) {
-                // event.clientX
-            });
-
         // section interactions
-        interact(eid + ' .section')//.allowFrom('.handle-heading')
+        interact(eid + ' .section')
             .draggable({
                 // enable inertial throwing
                 inertia: false,
@@ -609,13 +692,13 @@ jQuery(document).ready(function () {
                 // enable autoScroll
                 autoScroll: true,
                 // call this function on every dragmove event
-                onmove: function (event) {
-                    var target = event.target;
+                onmove: function (e) {
+                    var target = e.target;
                     var $target = $(target);
 
                     // keep the dragged position in the data-x/data-y attributes
-                    var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-                    var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+                    var x = (parseFloat(target.getAttribute('data-x')) || 0) + e.dx;
+                    var y = (parseFloat(target.getAttribute('data-y')) || 0) + e.dy;
 
                     $target.css('top', y + 'px');
                     $target.css('left', x + 'px');
@@ -639,37 +722,28 @@ jQuery(document).ready(function () {
                 preserveAspectRatio: false,
                 edges: { left: false, right: true, bottom: true, top: false }
             })
-            .on('resizemove', function (event) {
-                var target = event.target,
+            .on('resizemove', function (e) {
+                var target = e.target,
                     x = (parseFloat(target.getAttribute('data-x')) || 0),
                     y = (parseFloat(target.getAttribute('data-y')) || 0);
 
                 // update the element's style
-                target.style.width = event.rect.width + 'px';
-                target.style.height = event.rect.height + 'px';
-
-                // translate when resizing from top or left edges
-                x += event.deltaRect.left;
-                y += event.deltaRect.top;
-
-                target.setAttribute('data-x', x);
-                target.setAttribute('data-y', y);
+                target.style.width = e.rect.width + 'px';
+                target.style.height = e.rect.height + 'px';
 
                 // check if editor is open for this section
                 var id = target.getAttribute('id');
                 if (is_editor_linked(id)) {
                     position_editor($(target));
                 }
-
                 render_connections();
             })
-            .on('doubletap', function (event) {
+            .on('doubletap', function (e) {
                 var id = $(event.target).closest('.section').attr('id');
                 render_editor(id);
                 transform_focus(id);
                 render_connections();
             });
-
     }
 
 });
