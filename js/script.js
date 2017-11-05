@@ -25,6 +25,7 @@ jQuery(document).ready(function () {
         $t = $('.inner').addClass('inner no-transition');
 
         position_sections();
+        add_padding();
         configure_sections();
         notize();
         register_events();
@@ -83,14 +84,6 @@ jQuery(document).ready(function () {
         var y = parseFloat(t['translateY']);
         
         var scale = parseFloat(t['translateZ']) / 100;
-
-        // ensure we stay in bounds
-        if ( x > 0 ) x = 0;
-        if ( y > 0 ) y = 0;
-        var w = window.innerWidth;
-        var h = window.innerHeight;
-        if ( x < -w ) x = -w;
-        if ( y < -h ) y = -h;
         
         t['translateX'] = x + 'px';
         t['translateY'] = y + 'px';
@@ -119,12 +112,10 @@ jQuery(document).ready(function () {
 
     function position_sections() {
         
-        // start by adding some padding around .inner
+        // width and height optimizations can be done via themes
+        // we'll begin by getting width and height after theme injection
         var w = inner_width;
         var h = inner_height;
-
-        $('.inner').width( w + w/2 );
-        $('.inner').height( h + h/2 );
 
         var $sections = $('.section *');
         if ($sections.length > 0) {
@@ -140,9 +131,9 @@ jQuery(document).ready(function () {
                         var key = pairs[i].split(':')[0];
                         var value = pairs[i].split(':')[1];
                         if (key === 'left') {
-                            value = parseFloat(value) + w / 2;
+                            value = parseFloat(value);// + w / 2;
                         } else if (key === 'top') {
-                            value = parseFloat(value) + h / 2;
+                            value = parseFloat(value);// + h / 2;
                         } else if (key === 'transform') {
                             // special case, we'll add a data-transform attr
                             $(this).closest('.section').css('transform', value);
@@ -155,37 +146,31 @@ jQuery(document).ready(function () {
         }
 
         // now position elements that don't have position comments
-        var padding = 20;
-        var divisor = 8;
-        if ( $gd.settings.heading === 'p' || $gd.settings.heading === 'lyrics' ) {
-            padding = 10;
-            divisor = 2;
-        }
         var counter = 0;
-        var left = w / divisor;
-        var top = h / divisor;
+        var left = 0;
+        var top = 0;
         var row_height = 0;
-        $(eid + ' .section').each(function () {
+        $(eid_inner + ' .section').each(function () {
+
+            var padding_left = parseFloat( $(this).css('padding-left') );
+            var padding_top = parseFloat( $(this).css('padding-top') );
 
             // calculate and update section height
             var height = $(this).find('.content').height();
-            var $heading = $(this).find('.handle-heading');
-            if ( $heading.is(":visible") ) {
+            if ( $(this).find('.handle-heading').is(":visible") ) {
                 height += $(this).find('.handle-heading').height();
             }
 
             // row_height will be the height of the tallest section in the current row
-            if ( height > row_height ) {
-                row_height = height;
-            }
+            if ( height > row_height ) row_height = height;
 
             var x = parseFloat( $(this).css('left') );
             var y = parseFloat( $(this).css('top') );
             if ( x === 0 && y === 0 ) {
-                $(this).height(height + padding);
+                $(this).height(height + padding_top);
                 // set default values for section positions
                 if (counter > 0) {
-                    var prev_width = $(this).prev('.section').width() + padding;
+                    var prev_width = $(this).prev('.section').width() + padding_left;
                     // setup allowed_width to enforce single column when p tag used for heading
                     var allowed_width = w;
                     if ( $gd.settings.heading === 'p' || $gd.settings.heading === 'lyrics' ) {
@@ -193,12 +178,8 @@ jQuery(document).ready(function () {
                     }
                     // increment height if width of document is surpassed
                     if ( left > allowed_width - (prev_width * 1) ) {
-                        left = w / divisor;
-                        top += row_height + padding;
-                        if ( top + row_height > h ) {
-                            var h2 = $('.inner').height();
-                            $('.inner').height( h2 + h/4 );
-                        }
+                        left = 0;
+                        top += row_height + padding_top;
                         row_height = 0;
                     } else {
                         left += prev_width;
@@ -210,12 +191,56 @@ jQuery(document).ready(function () {
         });
     }
 
+    function add_padding() {
+        // now calculate the least and furthest section dimensions
+        var $first = $(eid_inner + ' .section:first-child');
+        var least_x = parseFloat( $first.css('left') );
+        var least_y = parseFloat( $first.css('top') );
+        var greatest_x = least_x;
+        var greatest_y = least_y;
+        $(eid + ' .section').each(function () {
+            var $s = $(this);
+            var current_x = parseFloat( $s.css('left') );
+            var current_y = parseFloat( $s.css('top') );
+
+            if ( current_x < least_x ) least_x = current_x;
+            if ( current_y < least_y ) least_y = current_y;
+
+            var current_width = $s.width();
+            var current_height = $s.height();
+
+            if ( current_x + current_width > greatest_x ) {
+                greatest_x = current_x + current_width;
+            }
+
+            if ( current_y + current_height > greatest_y ) {
+                greatest_y = current_y + current_height;
+            }
+        });
+
+        var width = greatest_x - least_x;
+        var height = greatest_y - least_y;
+
+        var padding_x = width / 2;
+        var padding_y = height / 2;
+
+        $inner = $(eid_inner);
+        $inner.width(width * 2);
+        $inner.height(height * 2);
+
+        $(eid_inner + ' .section').each(function () {
+            var $s = $(this);
+            var x = parseFloat( $s.css('left') );
+            var y = parseFloat( $s.css('top') );
+            $s.css('left', x - least_x + padding_x + 'px');
+            $s.css('top', y - least_y + padding_y + 'px');
+        });
+    }
+
     function configure_sections() {
         $(eid + ' .section').each(function () {
-
             var $s = $(this);
             $s.addClass('no-transition');
-
             // set initial position values
             var x = $s.css('left').slice(0, -2);
             var y = $s.css('top').slice(0, -2);
