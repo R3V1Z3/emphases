@@ -20,9 +20,10 @@ jQuery(document).ready(function () {
     var inner_height = $(eid_inner).height();
 
     function main() {
+        $('connection').remove();
 
         treversed();
-        $t = $('.inner').addClass('inner no-transition');
+        $t = $('.inner').addClass('no-transition');
 
         position_sections();
         add_padding();
@@ -31,6 +32,7 @@ jQuery(document).ready(function () {
         register_events();
         render_connections();
         update_transform(transforms);
+        local_links();
         must_stay_focused();
     }
 
@@ -49,6 +51,10 @@ jQuery(document).ready(function () {
                 'rotateZ': '5deg', 'translateZ': '0px'
             };
         }
+    }
+
+    function local_links() {
+        $(eid_inner + ' a[href^=#]').addClass('local');
     }
 
     // initial routine to update current link and set starting focus
@@ -296,6 +302,10 @@ jQuery(document).ready(function () {
     }
 
     function export_content() {
+
+        // first remove interface elements
+        $(eid_inner + ' .icon').remove();
+
         var content = '<pre>';
         var newline = '\n'; //'<br/>';
 
@@ -552,6 +562,11 @@ jQuery(document).ready(function () {
         $(eid + ` .info .toc a[href=#${id}]`).addClass('current');
 
         create_buttons(id);
+
+        // move editor to clicked section if already opened
+        if ( $(eid_inner + ' .editor').length > 0 ) {
+            render_editor(id);
+        }
     }
 
     function create_buttons(id) {
@@ -595,17 +610,6 @@ jQuery(document).ready(function () {
                 // alt-x for export
                 open_export();
             }
-        });
-
-        $(eid + ' .info .field.selector.app a.id').click(function (e) {
-            // configure url with hash and other needed params
-            var url = $(this).attr('data-id');
-            var css = $gd.settings.css;
-            url += `?css=${css}${location.hash}`;
-
-            // open window, receiveMessage will then wait for Ready message
-            win = window.open(url);
-            win.postMessage('Hello?', '*');
         });
 
         // .section interactions
@@ -652,6 +656,17 @@ jQuery(document).ready(function () {
 
     function register_events() {
 
+        $(eid + ' .info .field.selector.app a.id').click(function (e) {
+            // configure url with hash and other needed params
+            var url = $(this).attr('data-id');
+            var css = $gd.settings.css;
+            url += `?css=${css}${location.hash}`;
+
+            // open window, receiveMessage will then wait for Ready message
+            win = window.open(url);
+            win.postMessage('Hello?', '*');
+        });
+
         // listen for Ready messages from any opened windows
         window.addEventListener( 'message', function(e) {
             var o = $gd.settings.origin;
@@ -668,11 +683,6 @@ jQuery(document).ready(function () {
                 }
             }
         }, false);
-
-        // click handler for local links, incuding toc links
-        $(eid + ' a[href^=#]').click(function (e) {
-            register_hash_click(e);
-        });
 
         // make section current if it's clicked
         $(eid + ' .section').click(function (e) {
@@ -703,7 +713,65 @@ jQuery(document).ready(function () {
             render_connections();
         });
 
-        // section interactions
+        // reference and toc link click handler
+        $(eid + ' a[href^=#]').click(function (e) {
+            register_hash_click(e);
+        });
+
+        /* LOCAL LINK INTERACTION */
+        interact(eid + ' a.local')
+        .draggable({
+            // enable inertial throwing
+            inertia: false,
+            // keep the element within the area of it's parent
+            // enable autoScroll
+            autoScroll: false,
+            onstart: function(e) {
+                $('.container .link-clone').remove();
+                // todo
+                var c = $(e.target).text();
+                var html = `<div class="link-clone no-transition">${c}</div>`;
+                $('.container').append(html);
+                var $clone = $(eid_inner + ' .link-clone');
+                var x = e.pageX;
+                var y = e.pageY;
+                $clone.css('left', x);
+                $clone.css('top', y);
+                var id = $(e.target).closest('.section').attr('id');
+                $clone.attr('data-section-from', id);
+            },
+            // call this function on every dragmove event
+            onmove: function (e) {
+                var $clone = $('.container .link-clone');
+                var target = e.target;
+                var $target = $(target);
+
+                $clone.css('left', e.pageX);
+                $clone.css('top', e.pageY);
+            },
+            onend: function (e) {
+                var $clone = $('.container .link-clone');
+                var target = e.target;
+                var $target = $(target);
+                console.log(e.target);
+
+                $clone.css('left', e.pageX);
+                $clone.css('top', e.pageY);
+
+                $clone.remove();
+            }
+        });
+        // .resizable({
+        //     preserveAspectRatio: false,
+        //     edges: { left: true, right: true, bottom: true, top: true }
+        // })
+        // .on('resizemove', function (e) {
+        //     render_connections();
+        // })
+        // .on('doubletap', function (e) {
+        // });
+
+        /* SECTION INERACTION */
         interact(eid + ' .section')
             .draggable({
                 // enable inertial throwing
@@ -715,7 +783,7 @@ jQuery(document).ready(function () {
                     elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
                 },
                 // enable autoScroll
-                autoScroll: true,
+                autoScroll: false,
                 // call this function on every dragmove event
                 onmove: function (e) {
                     var target = e.target;
