@@ -1,7 +1,7 @@
 const gd = new GitDown('#wrapper', {
     'title': 'Emphases',
     'content': 'README.md',
-    'merge_gists': false,
+    'merge_gists': true,
     'callback': main
 });
 
@@ -16,12 +16,16 @@ var inner_width = $(eid_inner).width();
 var inner_height = $(eid_inner).height();
 
 function main() {
+    gd.status.log();
 
     // do nothing if user has selected different theme
-    if ( gd.status.has('theme-changed') ) return;
-    if ( gd.status.has('content-changed') ) {
-        $('.n-reference').connections('remove');
+    if ( gd.status.has('theme-changed') ) {
+        // somehow get transform values and make adjustments based on them
+        console.log(gd.settings.translatex);
+        return;
     }
+    //$('.n-reference').connections('remove');
+    $('connection').remove();
 
     // set container to be used for transforms
     $t = $(eid_inner).addClass('no-transition');
@@ -36,6 +40,11 @@ function main() {
     render_connections();
     local_links();
     must_stay_focused();
+
+    // mainly for interactjs, register specific events only at startup
+    if ( !gd.status.has('callback') ) {
+        register_events_onstartup();
+    }
 }
 
 // for the moment, this same code base will be used for multiple apps
@@ -79,8 +88,6 @@ function must_stay_focused() {
     if ( gd.status.has('loaded') ) {
         transform_focus(id);
     }
-
-    register_events_onstartup();
 }
 
 function update_transform(t) {
@@ -320,11 +327,11 @@ function export_content() {
         var attr = '';
         var px = 'px';
         attr += 'left:' + $(this).position().left + px;
-        attr += ',top:' + $(this).position().top + px;
-        attr += ',width:' + $(this).width() + px;
-        attr += ',height:' + $(this).height() + px;
+        attr += ';top:' + $(this).position().top + px;
+        attr += ';width:' + $(this).width() + px;
+        attr += ';height:' + $(this).height() + px;
         content += newline + newline;
-        content += '&lt;!-- {' + attr + '} -->';
+        content += '&lt;!-- {$gd_section_style="' + attr + ';"} -->';
         content += newline + newline;
     });
     content += newline + '</pre>';
@@ -592,8 +599,60 @@ function create_buttons(id) {
     });
 }
 
-function register_events_onstartup() {
+function register_hash_click(e) {
+    e.preventDefault();
+    var id = e.target.getAttribute('href').substr(1);
+    activate_section(id);
+    transform_focus(id);
+    render_connections();
+    // update url hash
+    window.location.hash = '#' + id;
+}
 
+function register_events() {
+
+    $(eid + ' .info .field.selector.app a.id').unbind().click(function (e) {
+        // configure url with hash and other needed params
+        var url = $(this).attr('data-id');
+        var css = gd.settings.css;
+        url += `?css=${css}${location.hash}`;
+
+        // open window, receiveMessage will then wait for Ready message
+        win = window.open(url);
+        win.postMessage('Hello?', '*');
+    });
+
+    // listen for Ready messages from any opened windows
+    window.addEventListener( 'message', function(e) {
+        var o = gd.settings.origin;
+        if ( o === '*' || e.origin === o ) {
+            if ( e.data === 'Ready.' ) {
+                var content = export_content();
+                $(eid).append('<div id="gd-export"></div>');
+                content = $('#gd-export').html(content).text();
+                $('#gd-export').remove();
+                var json = { "content": content };
+                var message = JSON.stringify(json);
+                e.source.postMessage( message, gd.settings.origin );
+                console.log('Message sent to child window.');
+            }
+        }
+    }, false);
+
+    // make section current if it's clicked
+    $(eid + ' .section').unbind().click(function (e) {
+        register_section_events(e);
+    });
+
+    // reference and toc link click handler
+    $(eid + ' a[href^=#]').unbind().click(function (e) {
+        register_hash_click(e);
+    });
+
+}
+
+function register_events_onstartup() {
+    
     // Key events
     $(document).keyup(function (e) {
         if ( e.which == 83 && e.altKey ) {
@@ -632,57 +691,6 @@ function register_events_onstartup() {
     .on('hold', function (event) {
         // event.clientX
     });
-}
-
-function register_hash_click(e) {
-    e.preventDefault();
-    var id = e.target.getAttribute('href').substr(1);
-    activate_section(id);
-    transform_focus(id);
-    render_connections();
-    // update url hash
-    window.location.hash = '#' + id;
-}
-
-function register_events() {
-
-    // remove connections when loading new file
-    $(eid + ' .info .field.selector.gist a.id').click(function (e) {
-        $('.n-reference').connections('remove');
-    });
-
-    $(eid + ' .info .field.selector.app a.id').click(function (e) {
-        // configure url with hash and other needed params
-        var url = $(this).attr('data-id');
-        var css = gd.settings.css;
-        url += `?css=${css}${location.hash}`;
-
-        // open window, receiveMessage will then wait for Ready message
-        win = window.open(url);
-        win.postMessage('Hello?', '*');
-    });
-
-    // listen for Ready messages from any opened windows
-    window.addEventListener( 'message', function(e) {
-        var o = gd.settings.origin;
-        if ( o === '*' || e.origin === o ) {
-            if ( e.data === 'Ready.' ) {
-                var content = export_content();
-                $(eid).append('<div id="gd-export"></div>');
-                content = $('#gd-export').html(content).text();
-                $('#gd-export').remove();
-                var json = { "content": content };
-                var message = JSON.stringify(json);
-                e.source.postMessage( message, gd.settings.origin );
-                console.log('Message sent to child window.');
-            }
-        }
-    }, false);
-
-    // make section current if it's clicked
-    $(eid + ' .section').click(function (e) {
-        register_section_events(e);
-    });
 
     // mousewheel zoom handler
     $(eid_inner).on('wheel', function (event) {
@@ -706,11 +714,6 @@ function register_events() {
         transforms['translateZ'] = scale + 'px';
         update_transform(transforms);
         render_connections();
-    });
-
-    // reference and toc link click handler
-    $(eid + ' a[href^=#]').click(function (e) {
-        register_hash_click(e);
     });
 
     /* LOCAL LINK INTERACTION */
