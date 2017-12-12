@@ -1,13 +1,16 @@
 # Emphases
 A simple word study and highlighting tool initially designed to aid in exposition of biblical texts. It renders Markdown-formatted content hosted for free through [GitHub Gist](https://gist.github.com/) in a sleek, interactive interface that's printable and shareable.
+
 <!-- {$gd_section_style="left:-10px;top:-10px;width:567px;height:197px;"} -->
 
 ## How it works
 Simply create a document for free at GitHub Gist, get the document's ID, and enter it in the Gist box in the Info panel. Emphases will render the file, turning headers and respective content into sections that are easy to read.
+
 <!-- {$gd_section_style="left:597px;top:-8px;width:526px;height:193px;"} -->
 
 ## Formatting
 Content follows basic Markdown rules along with a few simple rules to aid with interaction. [Headers](#headers-as-sections) within the document rendered as sections with subsequent content following under that header. [Local links](#local-links) within the document that point to headers in the same document will be rendered with lines connecting them to those headers.
+
 <!-- {$gd_section_style="left:-10px;top:173px;width:537px;height:198px;"} -->
 
 ## Headers as sections
@@ -15,6 +18,7 @@ Sections are created using headers in Markdown like so:
 ```## God```
 
 Content following the header will be included as content within the newly created section. Sections can then be linked to using local links as described below. When a section has content linking to it, it will be rendered as a note and styled differently to set it apart from other content.
+
 <!-- {$gd_section_style="left:609px;top:195px;width:510px;height:220px;"} -->
 
 ## Local links
@@ -36,6 +40,7 @@ Simply use something like this:
 
 ## Customization
 Once rendered, sections can be dragged to position them for better viewing/printing. Pressing <kbd>x</kbd> will provide an updated version of the document that includes position information that can be copied and pasted over the original file to save those details. With the position details included in the file, the url can easily be shared with positions intact.
+
 <!-- {$gd_section_style="left:614px;top:434px;width:508px;height:256px;"} -->
 
 # Examples <!-- {$gd_info} -->
@@ -78,6 +83,8 @@ Highlight Styles <!-- {$gd_select_highlight} -->
 - Tomorrow Night
 - Tomorrow
 - Vs
+
+<!-- {$gd_slider_fontsize="100,50,600,1,%"} -->
 
 <!-- {$gd_theme_variables} -->
 

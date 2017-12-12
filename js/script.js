@@ -1,7 +1,7 @@
 const gd = new GitDown('#wrapper', {
     'title': 'Emphases',
     'content': 'README.md',
-    'merge_gists': true,
+    'merge_gists': false,
     'callback': main
 });
 
@@ -16,7 +16,6 @@ var inner_width = $(eid_inner).width();
 var inner_height = $(eid_inner).height();
 
 function main() {
-    gd.status.log();
 
     // do nothing if user has selected different theme
     if ( gd.status.has('theme-changed') ) {
@@ -123,34 +122,6 @@ function render_values() {
     $(eid_inner + ' .section.current').css('transform', f);
 }
 
-function variable_html( v, el ) {
-    let c = '';
-    if ( v !== '' ) {
-        if ( gd.begins( v, 'gd_section_style' ) ) {
-            const x = v.split('=');
-            // return content after assignment and with quotes removed
-            if ( x.length > 1 ) c = x[1].slice(1, -1);          
-            return [c, 'section'];
-        }
-    }
-    return c;
-};
-
-function render_variables(container) {
-    const variables = gd.get_variables(container);
-    variables.forEach((v) => {
-        const variable = v[0], el = v[1];
-        const result = variable_html( variable, el );
-        if ( result.length < 1 ) return;
-        const content = result[0], r = result[1];
-        if ( r === 'section' ) {
-            // merge content to style of closest section
-            let s = el.closest('.section');
-            s.style.cssText = content;
-        }
-    });
-}
-
 function position_sections() {
     
     // width and height optimizations can be done via themes
@@ -158,35 +129,34 @@ function position_sections() {
     var w = inner_width;
     var h = inner_height;
 
-    // find and render gd_section_style variables
-    render_variables('.section *');
-
     // now position elements that don't have position comments
     var counter = 0;
     var left = 0;
     var top = 0;
     var row_height = 0;
-    $(eid_inner + ' .section').each(function () {
 
-        var padding_left = parseFloat( $(this).css('padding-left') );
-        var padding_top = parseFloat( $(this).css('padding-top') );
+    const sections = document.querySelectorAll( gd.eid_inner + ' .section' );
+    sections.forEach( (el) => {
+        render_section_styles(el);
+        var padding_left = parseFloat( $(el).css('padding-left') );
+        var padding_top = parseFloat( $(el).css('padding-top') );
 
         // calculate and update section height
-        var height = $(this).find('.content').height();
-        if ( $(this).find('.handle-heading').is(":visible") ) {
-            height += $(this).find('.handle-heading').height();
+        var height = $(el).find('.content').height();
+        if ( $(el).find('.handle-heading').is(":visible") ) {
+            height += $(el).find('.handle-heading').height();
         }
 
         // row_height will be the height of the tallest section in the current row
         if ( height > row_height ) row_height = height;
 
-        var x = parseFloat( $(this).css('left') );
-        var y = parseFloat( $(this).css('top') );
+        var x = parseFloat( $(el).css('left') );
+        var y = parseFloat( $(el).css('top') );
         if ( x === 0 && y === 0 ) {
-            $(this).height(height + padding_top);
+            $(el).height(height + padding_top);
             // set default values for section positions
             if (counter > 0) {
-                var prev_width = $(this).prev('.section').width() + padding_left;
+                var prev_width = $(el).prev('.section').width() + padding_left;
                 // setup allowed_width to enforce single column when p tag used for heading
                 var allowed_width = w;
                 if ( gd.settings.heading === 'p' || gd.settings.heading === 'lyrics' ) {
@@ -201,8 +171,20 @@ function position_sections() {
                     left += prev_width;
                 }
             }
-            $(this).css({ top: top, left: left });
+            $(el).css({ top: top, left: left });
             counter += 1;
+        }
+    });
+}
+
+function render_section_styles(s) {
+    const vars = s.querySelectorAll('.gd-var');
+    vars.forEach( (el) => {
+        const name = el.getAttribute('name');
+        if ( name === 'gd_section_style' ) {
+            const style = el.getAttribute('data-value');
+            const section = el.closest('.section');
+            section.setAttribute( 'style', style );
         }
     });
 }
