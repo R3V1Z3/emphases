@@ -1,7 +1,7 @@
 const gd = new GitDown('#wrapper', {
     'title': 'Emphases',
     'content': 'README.md',
-    'merge_gists': false,
+    'merge_gists': true,
     'callback': main
 });
 
@@ -16,12 +16,15 @@ var inner_width = $(eid_inner).width();
 var inner_height = $(eid_inner).height();
 
 function main() {
+    console.log('WHAT?');
+    gd.status.log();
 
     // do nothing if user has selected different theme
     if ( gd.status.has('theme-changed') ) {
         // somehow get transform values and make adjustments based on them
+        console.log('theme changed');
         console.log(gd.settings.translatex);
-        return;
+        //return;
     }
     //$('.n-reference').connections('remove');
     $('connection').remove();
@@ -152,6 +155,8 @@ function position_sections() {
 
         var x = parseFloat( $(el).css('left') );
         var y = parseFloat( $(el).css('top') );
+
+        // this conditional should ensure positioning when user doesn't provide styling
         if ( x === 0 && y === 0 ) {
             $(el).height(height + padding_top);
             // set default values for section positions
@@ -677,7 +682,7 @@ function register_events_onstartup() {
     // mousewheel zoom handler
     $(eid_inner).on('wheel', function (event) {
         event.preventDefault();
-        if (this !== event.target) return;
+        // if (this !== event.target) return;
 
         var scale = parseFloat(transforms['translateZ']);
         if (event.originalEvent.deltaY < 0) {
@@ -689,8 +694,8 @@ function register_events_onstartup() {
         if (scale > 300) scale = 300;
 
         // center scale on cursor position
-        var x = event.originalEvent.offsetX;
-        var y = event.originalEvent.offsetY;
+        var x = event.currentTarget.clientX;
+        var y = event.currentTarget.clientY;
         $('.inner').css('transform-origin', `${x}px ${y}px`);
         
         transforms['translateZ'] = scale + 'px';
