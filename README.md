@@ -1,47 +1,34 @@
 # Emphases
-A simple word study and highlighting tool initially designed to aid in exposition of biblical texts. It renders Markdown-formatted content hosted for free through [GitHub Gist](https://gist.github.com/) in a sleek, interactive interface that's printable and shareable.
+A simple word study and highlighting tool. Emphases renders Markdown-formatted content in a sleek, interactive interface that's printable and shareable.
 
 <!-- {$gd_section_style="left:-10px;top:-10px;width:567px;height:197px;"} -->
 
-## How it works
-Simply create a document for free at GitHub Gist, get the document's ID, and enter it in the Gist box in the Info panel. Emphases will render the file, turning headers and respective content into sections that are easy to read.
+## Explore
 
-<!-- {$gd_section_style="left:597px;top:-8px;width:526px;height:193px;"} -->
+Emphases provides an open canvas for exploring documents. Interaction is easy:
 
-## Formatting
-Content follows basic Markdown rules along with a few simple rules to aid with interaction. [Headers](#headers-as-sections) within the document rendered as sections with subsequent content following under that header. [Local links](#local-links) within the document that point to headers in the same document will be rendered with lines connecting them to those headers.
+*   Click and drag any blank area to navigate this document.
+*   Click and drag to move sections around.
+*   Zoom in and out with your mousewheel.
 
-<!-- {$gd_section_style="left:-10px;top:173px;width:537px;height:198px;"} -->
+Arrange sections to your liking and print.
 
-## Headers as sections
-Sections are created using headers in Markdown like so:  
-```## God```
+<!-- {$gd_section_style="left:-10px;top:200px;width:567px;height:300px;"} -->
 
-Content following the header will be included as content within the newly created section. Sections can then be linked to using local links as described below. When a section has content linking to it, it will be rendered as a note and styled differently to set it apart from other content.
+## Create your own documents
 
-<!-- {$gd_section_style="left:609px;top:195px;width:510px;height:220px;"} -->
+Creating documents like this is simple. It might help to see how the this document is formatted first. Click [here](https://github.com/Ugotsta/emphases/blob/master/README.md) to check it out.
 
-## Local links
-To create connections, just use Markdown to create links like so:  
-```[God](#god)```
+<!-- {$gd_section_style="left:-10px;top:500px;width:567px;height:200px;"} -->
 
-As long as a section labeled 'God' exists, the above portion of content will automatically link to it and a connection will be shown between the two.
+---
 
-### Local link formatting
-These local links must follow a few rules, mainly that the characters used are either lowercase alphanumeric or dashes. Spaces, commas, periods and other characters can be replaced with dashes in the links.
+To create your own:
 
-For example, to link to this section:  
-```## Jesus the Messiah```
+*   Create a document for free at [GitHub Gist](https://gist.github.com/)
+*   Get the document’s ID
+*   Paste it in the Gist box in the Navigation panel.
 
-Simply use something like this:  
-```[Jesus the Messiah](#jesus-the-messiah)```
-
-<!-- {$gd_section_style="left:3px;top:338px;width:548px;height:392px;"} -->
-
-## Customization
-Once rendered, sections can be dragged to position them for better viewing/printing. Pressing <kbd>x</kbd> will provide an updated version of the document that includes position information that can be copied and pasted over the original file to save those details. With the position details included in the file, the url can easily be shared with positions intact.
-
-<!-- {$gd_section_style="left:614px;top:434px;width:508px;height:256px;"} -->
 
 # Examples <!-- {$gd_info} -->
 <!-- {$gd_help_ribbon} -->

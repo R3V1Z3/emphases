@@ -1,7 +1,7 @@
 const gd = new GitDown('#wrapper', {
     'title': 'Emphases',
     'content': 'README.md',
-    'merge_gists': true,
+    'merge_gists': false,
     'callback': main
 });
 
@@ -16,18 +16,20 @@ var inner_width = $(eid_inner).width();
 var inner_height = $(eid_inner).height();
 
 function main() {
-    console.log('WHAT?');
-    gd.status.log();
 
     // do nothing if user has selected different theme
     if ( gd.status.has('theme-changed') ) {
         // somehow get transform values and make adjustments based on them
-        console.log('theme changed');
-        console.log(gd.settings.translatex);
-        //return;
+        return;
     }
-    //$('.n-reference').connections('remove');
-    $('connection').remove();
+
+    // do nothing if user has selected different theme
+    if ( gd.status.has('content-changed') ) {
+        // remove connections through note references
+        $('.n-reference').connections('remove');
+        // since gitdown clears .inner contents, we'll also remove connections manually
+        $('connection').remove();
+    }
 
     // set container to be used for transforms
     $t = $(eid_inner).addClass('no-transition');
@@ -57,7 +59,7 @@ function treversed() {
         'perspective': '400px', 'rotateX': '0deg', 'rotateY': '0deg', 'scaleZ': '1',
         'rotateZ': '0deg', 'translateZ': '0px'
     };
-    if ( gd.settings.title === 'TreversED' ) {
+    if ( gd.settings.get_value('title') === 'TreversED' ) {
         transforms = {
             'scale': 1, 'translateX': '0px', 'translateY': '0px',
             'perspective': '400px', 'rotateX': '5deg', 'rotateY': '0deg', 'scaleZ': '1',
@@ -164,8 +166,9 @@ function position_sections() {
                 var prev_width = $(el).prev('.section').width() + padding_left;
                 // setup allowed_width to enforce single column when p tag used for heading
                 var allowed_width = w;
-                if ( gd.settings.heading === 'p' || gd.settings.heading === 'lyrics' ) {
-                    allowed_width = prev_width;
+                if ( gd.settings.get_value('heading') === 'p' ||
+                    gd.settings.get_value('heading') === 'lyrics' ) {
+                        allowed_width = prev_width;
                 }
                 // increment height if width of document is surpassed
                 if ( left > allowed_width - (prev_width * 1) ) {
@@ -375,6 +378,8 @@ function render_editor(id, focus) {
         // get the attached section's current id
         var id = $(this).closest('.editor').attr('data-section');
         var container = `.section#${id} .content`;
+        // remove any existing connections before re-rendering content
+        if ( $('connection').length > 0 ) $('.n-reference').connections('remove');
         gd.render(content, container);
         // register any newly created/edited links
         $s.find('a[href^=#]').click(function (e) {
@@ -601,7 +606,7 @@ function register_events() {
     $(eid + ' .info .field.selector.app a.id').unbind().click(function (e) {
         // configure url with hash and other needed params
         var url = $(this).attr('data-id');
-        var css = gd.settings.css;
+        var css = gd.settings.get_value('css');
         url += `?css=${css}${location.hash}`;
 
         // open window, receiveMessage will then wait for Ready message
@@ -611,7 +616,7 @@ function register_events() {
 
     // listen for Ready messages from any opened windows
     window.addEventListener( 'message', function(e) {
-        var o = gd.settings.origin;
+        var o = gd.settings.get_value('origin');
         if ( o === '*' || e.origin === o ) {
             if ( e.data === 'Ready.' ) {
                 var content = export_content();
@@ -620,7 +625,7 @@ function register_events() {
                 $('#gd-export').remove();
                 var json = { "content": content };
                 var message = JSON.stringify(json);
-                e.source.postMessage( message, gd.settings.origin );
+                e.source.postMessage( message, gd.settings.get_value('origin') );
                 console.log('Message sent to child window.');
             }
         }
