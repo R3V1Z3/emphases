@@ -14,6 +14,41 @@
 
 @page { size:8.5in 11in; margin: 0.25cm }
 
+:root {
+  --bg: cornsilk;
+  /* --font: 'Baloo', sans-serif, serif, monospace; */
+
+  --width: 960px;
+  --height: 400px;
+  --fontsize: 140%;
+
+  --padding: 10px;
+
+  --inner-space: 100px;
+  --outer-space: 0px;
+
+  --vignette-blend: normal;
+
+  --brightness: 1;
+  --contrast: 100%;
+  --grayscale: 0%;
+  --hue-rotate: 0deg;
+  --invert: 0%;
+  --saturate: 100%;
+  --sepia: 0%;
+  --blur: 0px;
+
+  --scale: 1.0;
+  --perspective: 1500px;
+  --rotatex: 0deg;
+  --rotatey: 0deg;
+  --rotatez: 0deg;
+  --translatez: 0px;
+
+  --originx: 50%;
+  --originy: 50%;
+}
+
 * {
   transition: none;
 }
@@ -41,7 +76,7 @@ body, html, #wrapper, .container {
   width: 100%;
 }
 
-.gd-default .inner::before {
+.bd-default .inner::before {
   pointer-events: none;
   content: "";
   position: fixed;
@@ -49,7 +84,7 @@ body, html, #wrapper, .container {
   right: 0;
   left: 0;
   bottom: 0;
-  background: url(https://ugotsta.github.io/gitdown/assets/cold-pressed-watercolor.jpg), radial-gradient(ellipse at center, rgba(0,0,0,0) 0%,rgba(0,0,0,0) 31%,rgba(0,0,0,0.4) 71%,rgba(0,0,0,0.8) 100%);
+  background: url(https://ugotsta.github.io/breakdown/assets/cold-pressed-watercolor.jpg), radial-gradient(ellipse at center, rgba(0,0,0,0) 0%,rgba(0,0,0,0) 31%,rgba(0,0,0,0.4) 71%,rgba(0,0,0,0.8) 100%);
   background-color: slategray;
   background-blend-mode: hard-light;
 }
@@ -240,37 +275,21 @@ connection {
   outline: 1px solid rgba(255,255,255,0.5);
 }
 
-/* ------------------------------------------------------------------------ */
-
-.info {
-  color: #ddd;
+/* Info panel */
+.nav a {
+  color: #76869C;
 }
 
-.info .app-title {
-  text-shadow: 1px 1px 2px black;
-  padding: 10px 2px;
+.nav .toc a.current {
+  color: gray;
+  pointer-events: none;
 }
 
-.info .app-title::first-letter {
-  background-color: burlywood;
-  border-radius: 5px;
-  padding: 0em 0.25em 0em 0.25em;
+.nav .toc a.current::before {
+  content: "> ";
 }
 
-.info .toc a {
-  text-decoration: none;
-  color: burlywood;
-}
-
-.info .toc a:hover {
-  color: #fff;
-}
-
-.info .hide {
-  color: burlywood;
-}
-
-.info .hide:hover {
+#custom .nav a:hover {
   color: #fff;
 }
 

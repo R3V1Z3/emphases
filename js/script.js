@@ -1,4 +1,4 @@
-const gd = new GitDown('#wrapper', {
+const gd = new BreakDown('#wrapper', {
     'title': 'Emphases',
     'content': 'README.md',
     'merge_gists': false,
@@ -10,7 +10,8 @@ var $t; // will hold container where transforms are made
 var win;
 var vars;
 
-var eid = gd.eid, eid_inner = gd.eid_inner;
+var eid = gd.eid, eid_inner = gd.eidInner;
+console.log(eid, eid_inner);
 
 var inner_width = $(eid_inner).width();
 var inner_height = $(eid_inner).height();
@@ -59,7 +60,7 @@ function treversed() {
         'perspective': '400px', 'rotateX': '0deg', 'rotateY': '0deg', 'scaleZ': '1',
         'rotateZ': '0deg', 'translateZ': '0px'
     };
-    if ( gd.settings.get_value('title') === 'TreversED' ) {
+    if ( gd.settings.getValue('title') === 'TreversED' ) {
         transforms = {
             'scale': 1, 'translateX': '0px', 'translateY': '0px',
             'perspective': '400px', 'rotateX': '5deg', 'rotateY': '0deg', 'scaleZ': '1',
@@ -166,8 +167,8 @@ function position_sections() {
                 var prev_width = $(el).prev('.section').width() + padding_left;
                 // setup allowed_width to enforce single column when p tag used for heading
                 var allowed_width = w;
-                if ( gd.settings.get_value('heading') === 'p' ||
-                    gd.settings.get_value('heading') === 'lyrics' ) {
+                if ( gd.settings.getValue('heading') === 'p' ||
+                    gd.settings.getValue('heading') === 'lyrics' ) {
                         allowed_width = prev_width;
                 }
                 // increment height if width of document is surpassed
@@ -606,7 +607,7 @@ function register_events() {
     $(eid + ' .info .field.selector.app a.id').unbind().click(function (e) {
         // configure url with hash and other needed params
         var url = $(this).attr('data-id');
-        var css = gd.settings.get_value('css');
+        var css = gd.settings.getValue('css');
         url += `?css=${css}${location.hash}`;
 
         // open window, receiveMessage will then wait for Ready message
@@ -616,7 +617,7 @@ function register_events() {
 
     // listen for Ready messages from any opened windows
     window.addEventListener( 'message', function(e) {
-        var o = gd.settings.get_value('origin');
+        var o = gd.settings.getValue('origin');
         if ( o === '*' || e.origin === o ) {
             if ( e.data === 'Ready.' ) {
                 var content = export_content();
@@ -625,7 +626,7 @@ function register_events() {
                 $('#gd-export').remove();
                 var json = { "content": content };
                 var message = JSON.stringify(json);
-                e.source.postMessage( message, gd.settings.get_value('origin') );
+                e.source.postMessage( message, gd.settings.getValue('origin') );
                 console.log('Message sent to child window.');
             }
         }
