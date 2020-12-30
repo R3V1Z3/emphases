@@ -264,6 +264,7 @@ function notize() {
         $(".content a[href^=#]").each(function () {
             var $link = $(this);
             var href = $link.attr('href').substr(1);
+            console.log($link.attr('href'), ' | ');
             if (href === name) {
                 // this is a note, so set boolean for later
                 var classes = ' note note-' + href;

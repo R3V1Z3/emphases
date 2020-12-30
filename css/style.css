@@ -20,7 +20,7 @@
 
   --width: 960px;
   --height: 400px;
-  --fontsize: 140%;
+  --fontsize: 100%;
 
   --padding: 10px;
 
@@ -66,18 +66,63 @@ body, html, #wrapper, .container {
   overflow: hidden;
 }
 
+.fx {
+  width: 2160px;
+  height: 3840px;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  filter:
+    brightness(var(--brightness))
+    contrast(var(--contrast))
+    grayscale(var(--grayscale))
+    hue-rotate(var(--hue-rotate))
+    invert(var(--invert))
+    saturate(var(--saturate))
+    sepia(var(--sepia))
+    blur(var(--blur));
+}
+
+.vignette-layer {
+  mix-blend-mode: var(--vignette-blend);
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0) 0%,rgba(0,0,0,0.5) 100%);
+}
+
 .container {
   margin: auto;
 }
 
 .inner {
+  font-size: var(--fontsize);
+  transform:
+    scale(var(--scale))
+    perspective(var(--perspective))
+    rotateX(var(--rotatex))
+    rotateY(var(--rotatey))
+    rotateZ(var(--rotatez))
+    translateZ(var(--translatez));
+  transform-origin: var(--originx) var(--originy);
+  transform-style: preserve-3d;
   position: fixed;
   height: 100%;
   width: 100%;
 }
 
-.bd-default .inner::before {
-  pointer-events: none;
+.bd-default .inner {
+  height: 2160px;
+  width: 3840px;
+  overflow: hidden;
   content: "";
   position: fixed;
   top: 0;
@@ -87,6 +132,11 @@ body, html, #wrapper, .container {
   background: url(https://ugotsta.github.io/breakdown/assets/cold-pressed-watercolor.jpg), radial-gradient(ellipse at center, rgba(0,0,0,0) 0%,rgba(0,0,0,0) 31%,rgba(0,0,0,0.4) 71%,rgba(0,0,0,0.8) 100%);
   background-color: slategray;
   background-blend-mode: hard-light;
+}
+
+.bd-default .inner::before {
+  pointer-events: none;
+
 }
 
 a {
@@ -275,7 +325,15 @@ connection {
   outline: 1px solid rgba(255,255,255,0.5);
 }
 
-/* Info panel */
+/* Nav panel */
+.nav h1 {
+  padding: .25em 0 .25em 0;
+}
+
+.nav p {
+  font-size: .65em;
+}
+
 .nav a {
   color: #76869C;
 }
